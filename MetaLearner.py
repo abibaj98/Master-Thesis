@@ -28,8 +28,8 @@ class TLearner:  # TODO: comment what is what.
             self.mu0_model = RandomForestRegressor(n_estimators=1000, max_depth=100, random_state=0)
             self.mu1_model = RandomForestRegressor(n_estimators=1000, max_depth=100, random_state=0)
         elif method == 'lasso':
-            self.mu0_model = LassoCV(cv=10, tol=1e-2, random_state=0)
-            self.mu1_model = LassoCV(cv=10, tol=1e-2, random_state=0)
+            self.mu0_model = LassoCV(cv=10, tol=1e-2, random_state=0, max_iter=100000)
+            self.mu1_model = LassoCV(cv=10, tol=1e-2, random_state=0, max_iter=100000)
             self.poly = PolynomialFeatures(degree=3, interaction_only=False, include_bias=False)
         elif method == 'nn':
             self.mu0_model = load_model('model_25')
@@ -41,11 +41,11 @@ class TLearner:  # TODO: comment what is what.
             x, y, w):  # TODO: training process
         if self.method == 'rf':
             # 1: train mu_0
-            print("Fitting random forest for mu_0")
+            print("Fitting RF for mu_0")
             self.mu0_model.fit(x[w == 0], y[w == 0])
 
             # 2: train mu_1
-            print("Fitting random forest for mu_1")
+            print("Fitting RF for mu_1")
             self.mu1_model.fit(x[w == 1], y[w == 1])
 
         elif self.method == 'lasso':
@@ -53,16 +53,16 @@ class TLearner:  # TODO: comment what is what.
             x_poly_train = self.poly.fit_transform(x)
 
             # 1: train mu_0
-            print("Fitting lasso for mu_0")
+            print("Fitting Lasso for mu_0")
             self.mu0_model.fit(x_poly_train[w == 0], y[w == 0])
 
             # 2: train mu_1
-            print("Fitting lasso for mu_1")
+            print("Fitting Lasso for mu_1")
             self.mu1_model.fit(x_poly_train[w == 1], y[w == 1])
 
         elif self.method == 'nn':
             # 1: train mu_0
-            print("Training neural network for mu_0")
+            print("Training NN for mu_0")
             self.mu0_model.fit(x[w == 0], y[w == 0],
                                batch_size=100,
                                epochs=100,
@@ -71,7 +71,7 @@ class TLearner:  # TODO: comment what is what.
                                )
 
             # 2: train mu_1
-            print("Training neural network for mu_1")
+            print("Training NN for mu_1")
             self.mu1_model.fit(x[w == 1], y[w == 1],
                                batch_size=100,
                                epochs=100,
@@ -116,7 +116,7 @@ class SLearner:  # TODO: comment what is what.
         if method == 'rf':
             self.mux_model = RandomForestRegressor(n_estimators=1000, max_depth=100, random_state=0)
         elif method == 'lasso':
-            self.mux_model = LassoCV(cv=10, tol=1e-2, random_state=0)
+            self.mux_model = LassoCV(cv=10, tol=1e-2, random_state=0, max_iter=100000)
             self.poly = PolynomialFeatures(degree=3, interaction_only=False, include_bias=False)
         elif method == 'nn':
             self.mux_model = load_model('model_26')
@@ -129,7 +129,7 @@ class SLearner:  # TODO: comment what is what.
 
         if self.method == 'rf':
             # 1: train mu_x
-            print("Fitting random forest for mu_x")
+            print("Fitting RF for mu_x")
             self.mux_model.fit(x_w, y)
 
         elif self.method == 'lasso':
@@ -137,13 +137,13 @@ class SLearner:  # TODO: comment what is what.
             x_poly_train = self.poly.fit_transform(x_w)
 
             # 1: train mu_x
-            print("Fitting lasso for mu_x")
+            print("Fitting Lasso for mu_x")
             self.mux_model.fit(x_poly_train, y)
 
 
         elif self.method == 'nn':
             # 1: train mu_x
-            print("Training neural network for mu_x")
+            print("Training NN for mu_x")
             self.mux_model.fit(x_w, y,
                                batch_size=100,
                                epochs=100,
@@ -198,11 +198,12 @@ class XLearner:  # TODO: comment what is what.
             self.tau1_model = RandomForestRegressor(n_estimators=100, max_depth=100, random_state=0)
 
         elif method == 'lasso':
-            self.mu0_model = LassoCV(cv=10, tol=1, random_state=0)
-            self.mu1_model = LassoCV(cv=10, tol=1, random_state=0)
-            self.ex_model = LogisticRegressionCV(cv=KFold(10), penalty='l1', solver='saga', tol=1, random_state=0)
-            self.tau0_model = LassoCV(cv=10, tol=1, random_state=0)
-            self.tau1_model = LassoCV(cv=10, tol=1, random_state=0)
+            self.mu0_model = LassoCV(cv=10, tol=1, random_state=0, max_iter=100000)
+            self.mu1_model = LassoCV(cv=10, tol=1, random_state=0, max_iter=100000)
+            self.ex_model = LogisticRegressionCV(cv=KFold(10), penalty='l1', solver='saga', tol=1, random_state=0,
+                                                 max_iter=100000)
+            self.tau0_model = LassoCV(cv=10, tol=1, random_state=0, max_iter=100000)
+            self.tau1_model = LassoCV(cv=10, tol=1, random_state=0, max_iter=100000)
             self.poly = PolynomialFeatures(degree=3, interaction_only=False, include_bias=False)
 
         elif method == 'nn':
@@ -218,25 +219,25 @@ class XLearner:  # TODO: comment what is what.
             x, y, w):  # TODO: training process
         if self.method == 'rf':
             # 1: train mu_0 and get imputed_1
-            print("Fitting random forest for mu_0")
+            print("Fitting RF for mu_0")
             self.mu0_model.fit(x[w == 0], y[w == 0])
             imputed_1 = y[w == 1] - self.mu0_model.predict(x[w == 1])
 
             # 2: train mu_1 and get imputed_0
-            print("Fitting random forest for mu_1")
+            print("Fitting RF for mu_1")
             self.mu1_model.fit(x[w == 1], y[w == 1])
             imputed_0 = self.mu1_model.predict(x[w == 0]) - y[w == 0]
 
             # 3: train tau_0
-            print("Fitting random forest for tau_0")
+            print("Fitting RF for tau_0")
             self.tau0_model.fit(x[w == 0], imputed_0)
 
             # 4: train tau_1
-            print("Fitting random forest for tau_1")
+            print("Fitting RF for tau_1")
             self.tau1_model.fit(x[w == 1], imputed_1)
 
             # 5: train e_x
-            print("Fitting random forest for e_x")
+            print("Fitting RF for e_x")
             self.ex_model.fit(x, w)
 
         elif self.method == 'lasso':
@@ -244,25 +245,25 @@ class XLearner:  # TODO: comment what is what.
             x_poly_train = self.poly.fit_transform(x)
 
             # 1: train mu_0 and get imputed_1
-            print("Fitting lasso for mu_0")
+            print("Fitting Lasso for mu_0")
             self.mu0_model.fit(x_poly_train[w == 0], y[w == 0])
             imputed_1 = y[w == 1] - self.mu0_model.predict(x_poly_train[w == 1])
 
             # 2: train mu_1 and get imputed_0
-            print("Fitting lasso for mu_1")
+            print("Fitting Lasso for mu_1")
             self.mu1_model.fit(x_poly_train[w == 1], y[w == 1])
             imputed_0 = self.mu1_model.predict(x_poly_train[w == 0]) - y[w == 0]
 
             # 3: train tau_0
-            print("Fitting lasso for tau_0")
+            print("Fitting Lasso for tau_0")
             self.tau0_model.fit(x_poly_train[w == 0], imputed_0)
 
             # 4: train tau_1
-            print("Fitting lasso for tau_1")
+            print("Fitting Lasso for tau_1")
             self.tau1_model.fit(x_poly_train[w == 1], imputed_1)
 
             # 5: train e_x
-            print("Fitting lasso for e_x")
+            print("Fitting Lasso for e_x")
             self.ex_model.fit(x_poly_train, w)
 
         elif self.method == 'nn':
@@ -317,7 +318,7 @@ class XLearner:  # TODO: comment what is what.
             raise NotImplementedError('Base learner method not specified in fit')
 
     def predict(self,
-                x):  # TODO:
+                x):
         if self.method == 'rf':
             # 1: calculate hats of tau_0 and tau_1
             tau_0_hats = self.tau0_model.predict(x)
@@ -361,9 +362,10 @@ class RLearner:
             self.tau_model = RandomForestRegressor(n_estimators=100, max_depth=100, random_state=0)
 
         elif method == 'lasso':
-            self.mux_model = LassoCV(cv=10, tol=1, random_state=0)
-            self.ex_model = LogisticRegressionCV(cv=KFold(10), penalty='l1', solver='saga', tol=1, random_state=0)
-            self.tau_model = LassoCV(cv=10, tol=1, random_state=0)
+            self.mux_model = LassoCV(cv=10, tol=1, random_state=0, max_iter=100000)
+            self.ex_model = LogisticRegressionCV(cv=KFold(10), penalty='l1', solver='saga', tol=1, random_state=0,
+                                                 max_iter=100000)
+            self.tau_model = LassoCV(cv=10, tol=1, random_state=0, max_iter=100000)
             self.poly = PolynomialFeatures(degree=3, interaction_only=False, include_bias=False)
 
         elif method == 'nn':
@@ -378,10 +380,10 @@ class RLearner:
 
         if self.method == 'rf':
             # 1: fit mu_x
-            print('Fitting random forest for mu_x')
+            print('Fitting RF for mu_x')
             self.mux_model.fit(x, y)
 
-            print('Fitting random forest for e_x')
+            print('Fitting RF for e_x')
             # 2: fit ex
             self.ex_model.fit(x, w)
 
@@ -390,7 +392,7 @@ class RLearner:
             pseudo_outcomes = (y - self.mux_model.predict(x)) / (w - probs + 0.01)  # TODO: change these!!!
             weights = (w - probs) ** 2
 
-            print('Fitting random forest for tau_x')
+            print('Fitting RF for tau_x')
             # 4: fit tau
             self.tau_model.fit(x, pseudo_outcomes, sample_weight=weights)
 
@@ -398,11 +400,11 @@ class RLearner:
             x_poly_train = self.poly.fit_transform(x)
 
             # 1: fit mu_x
-            print('Fitting lasso for mu_x')
+            print('Fitting Lasso for mu_x')
             self.mux_model.fit(x_poly_train, y)
 
             # 2: fit ex
-            print('Fitting lasso for e_x')
+            print('Fitting Lasso for e_x')
             self.ex_model.fit(x_poly_train, w)
 
             # 3: calculate pseudo_outcomes & weights
@@ -411,7 +413,7 @@ class RLearner:
             weights = (w - probs) ** 2
 
             # 4: fit tau
-            print('Fitting lasso for tau_x')
+            print('Fitting Lasso for tau_x')
             self.tau_model.fit(x_poly_train, pseudo_outcomes, sample_weight=weights)
 
         elif self.method == 'nn':
@@ -480,10 +482,11 @@ class DRLearner:
             self.tau_model = RandomForestRegressor(n_estimators=100, max_depth=100, random_state=0)
 
         elif method == 'lasso':
-            self.mu0_model = LassoCV(cv=10, tol=1, random_state=0)
-            self.mu1_model = LassoCV(cv=10, tol=1, random_state=0)
-            self.ex_model = LogisticRegressionCV(cv=KFold(10), penalty='l1', solver='saga', tol=1, random_state=0)
-            self.tau_model = LassoCV(cv=10, tol=1, random_state=0)
+            self.mu0_model = LassoCV(cv=10, tol=1, random_state=0, max_iter=100000)
+            self.mu1_model = LassoCV(cv=10, tol=1, random_state=0, max_iter=100000)
+            self.ex_model = LogisticRegressionCV(cv=KFold(10), penalty='l1', solver='saga', tol=1, random_state=0,
+                                                 max_iter=100000)
+            self.tau_model = LassoCV(cv=10, tol=1, random_state=0, max_iter=100000)
             self.poly = PolynomialFeatures(degree=3, interaction_only=False, include_bias=False)
 
         elif method == 'nn':
@@ -499,15 +502,15 @@ class DRLearner:
 
         if self.method == 'rf':
             # 1: fit mu_0
-            print('Fitting random forest for mu_0')
+            print('Fitting RF for mu_0')
             self.mu0_model.fit(x[w == 0], y[w == 0])
 
             # 2: fit mu_1
-            print('Fitting random forest for mu_1')
+            print('Fitting RF for mu_1')
             self.mu1_model.fit(x[w == 1], y[w == 1])
 
             # 3: fit ex
-            print('Fitting random forest for e_x')
+            print('Fitting RF for e_x')
             self.ex_model.fit(x, w)
             probs = self.ex_model.predict_proba(x)[:, 1]
             neg_prob = self.ex_model.predict_proba(x)[:, 0]
@@ -518,7 +521,7 @@ class DRLearner:
                 x) - self.mu0_model.predict(x)  # TODO: CHANGE THESE 0.01s!
 
             # 4 fit tau
-            print('Fitting random forest for tau_x')
+            print('Fitting RF for tau_x')
             self.tau_model.fit(x, pseudo_outcomes)
 
         elif self.method == 'lasso':
@@ -621,9 +624,9 @@ class RALearner:
             self.tau_model = RandomForestRegressor(n_estimators=100, max_depth=100, random_state=0)
 
         elif method == 'lasso':
-            self.mu0_model = LassoCV(cv=10, tol=1, random_state=0)
-            self.mu1_model = LassoCV(cv=10, tol=1, random_state=0)
-            self.tau_model = LassoCV(cv=10, tol=1, random_state=0)
+            self.mu0_model = LassoCV(cv=10, tol=1, random_state=0, max_iter=100000)
+            self.mu1_model = LassoCV(cv=10, tol=1, random_state=0, max_iter=100000)
+            self.tau_model = LassoCV(cv=10, tol=1, random_state=0, max_iter=100000)
             self.poly = PolynomialFeatures(degree=3, interaction_only=False, include_bias=False)
 
         elif method == 'nn':
@@ -637,29 +640,29 @@ class RALearner:
     def fit(self, x, y, w):
         if self.method == 'rf':
             # 1: fit mu_0
-            print('Fitting random forest for mu_0')
+            print('Fitting RF for mu_0')
             self.mu0_model.fit(x[w == 0], y[w == 0])
 
             # 2: fit mu_1
-            print('Fitting random forest for mu_1')
+            print('Fitting RF for mu_1')
             self.mu1_model.fit(x[w == 1], y[w == 1])
 
             # calculate pseudo_outcomes
             pseudo_outcomes = w * (y - self.mu0_model.predict(x)) + (1 - w) * (self.mu1_model.predict(x) - y)
 
             # 4 fit tau
-            print('Fitting random forest for tau_x')
+            print('Fitting RF for tau_x')
             self.tau_model.fit(x, pseudo_outcomes)
 
         elif self.method == 'lasso':
             x_poly_train = self.poly.fit_transform(x)
 
             # 1: fit mu_0
-            print('Fitting lasso for mu_0')
+            print('Fitting Lasso for mu_0')
             self.mu0_model.fit(x_poly_train[w == 0], y[w == 0])
 
             # 2: fit mu_1
-            print('Fitting lasso for mu_1')
+            print('Fitting Lasso for mu_1')
             self.mu1_model.fit(x_poly_train[w == 1], y[w == 1])
 
             # calculate pseudo_outcomes
@@ -667,7 +670,7 @@ class RALearner:
                     self.mu1_model.predict(x_poly_train) - y)
 
             # 4 fit tau
-            print('Fitting lasso for tau_x')
+            print('Fitting Lasso for tau_x')
             self.tau_model.fit(x_poly_train, pseudo_outcomes)
 
         elif self.method == 'nn':
@@ -732,8 +735,9 @@ class PWLearner:
             self.tau_model = RandomForestRegressor(n_estimators=100, max_depth=100, random_state=0)
 
         elif method == 'lasso':
-            self.ex_model = LogisticRegressionCV(cv=KFold(10), penalty='l1', solver='saga', tol=1, random_state=0)
-            self.tau_model = LassoCV(cv=10, tol=1, random_state=0)
+            self.ex_model = LogisticRegressionCV(cv=KFold(10), penalty='l1', solver='saga', tol=1, random_state=0,
+                                                 max_iter=100000)
+            self.tau_model = LassoCV(cv=10, tol=1, random_state=0, max_iter=100000)
             self.poly = PolynomialFeatures(degree=3, interaction_only=False, include_bias=False)
 
         elif method == 'nn':
@@ -747,7 +751,7 @@ class PWLearner:
 
         if self.method == 'rf':
             # 3: fit ex
-            print('Fitting random forest for e_x')
+            print('Fitting RF for e_x')
             self.ex_model.fit(x, w)
             probs = self.ex_model.predict_proba(x)[:, 1]
             counter_probs = self.ex_model.predict_proba(x)[:, 0]
@@ -756,14 +760,14 @@ class PWLearner:
             pseudo_outcomes = (w / (probs + 0.01) - (1 - w) / (counter_probs + 0.01)) * y  # TODO: CHANGE 0.01!
 
             # 4 fit tau
-            print('Fitting random forest for tau_x')
+            print('Fitting RF for tau_x')
             self.tau_model.fit(x, pseudo_outcomes)
 
         elif self.method == 'lasso':
             x_poly_train = self.poly.fit_transform(x)
 
             # 3: fit ex
-            print('Fitting lasso for e_x')
+            print('Fitting Lasso for e_x')
             self.ex_model.fit(x_poly_train, w)
 
             probs = self.ex_model.predict_proba(x_poly_train)[:, 1]
@@ -773,7 +777,7 @@ class PWLearner:
             pseudo_outcomes = (w / (probs + 0.01) - (1 - w) / (counter_probs + 0.01)) * y
 
             # 4 fit tau
-            print('Fitting lasso for tau_x')
+            print('Fitting Lasso for tau_x')
             self.tau_model.fit(x_poly_train, pseudo_outcomes)
 
         elif self.method == 'nn':
@@ -829,9 +833,10 @@ class ULearner:
             self.tau_model = RandomForestRegressor(n_estimators=100, max_depth=100, random_state=0)
 
         elif method == 'lasso':
-            self.mux_model = LassoCV(cv=10, tol=1, random_state=0)
-            self.ex_model = LogisticRegressionCV(cv=KFold(10), penalty='l1', solver='saga', tol=1, random_state=0)
-            self.tau_model = LassoCV(cv=10, tol=1, random_state=0)
+            self.mux_model = LassoCV(cv=10, tol=1, random_state=0, max_iter=100000)
+            self.ex_model = LogisticRegressionCV(cv=KFold(10), penalty='l1', solver='saga', tol=1, random_state=0,
+                                                 max_iter=100000)
+            self.tau_model = LassoCV(cv=10, tol=1, random_state=0, max_iter=100000)
             self.poly = PolynomialFeatures(degree=3, interaction_only=False, include_bias=False)
 
         elif method == 'nn':
@@ -846,11 +851,11 @@ class ULearner:
 
         if self.method == 'rf':
             # 2: fit mu_x
-            print('Fitting random forest for mu_x')
+            print('Fitting RF for mu_x')
             self.mux_model.fit(x, y)
 
             # 3: fit ex
-            print('Fitting random forest for e_x')
+            print('Fitting RF for e_x')
             self.ex_model.fit(x, w)
             probs = self.ex_model.predict_proba(x)[:, 1]
 
@@ -858,18 +863,18 @@ class ULearner:
             residuals = (y - self.mux_model.predict(x)) / (w - probs + 0.01)  # TODO: CHANGE 0.01
 
             # 4 fit tau
-            print('Fitting random forest for tau_x')
+            print('Fitting RF for tau_x')
             self.tau_model.fit(x, residuals)
 
         elif self.method == 'lasso':
             x_poly_train = self.poly.fit_transform(x)
 
             # 2: fit mu_x
-            print('Fitting lasso for mu_x')
+            print('Fitting Lasso for mu_x')
             self.mux_model.fit(x_poly_train, y)
 
             # 3: fit ex
-            print('Fitting lasso for e_x')
+            print('Fitting Lasso for e_x')
             self.ex_model.fit(x_poly_train, w)
             probs = self.ex_model.predict_proba(x_poly_train)[:, 1]
 
@@ -877,7 +882,7 @@ class ULearner:
             residuals = (y - self.mux_model.predict(x_poly_train)) / (w - probs + 0.01)
 
             # 4 fit tau
-            print('Fitting lasso for tau_x')
+            print('Fitting Lasso for tau_x')
             self.tau_model.fit(x_poly_train, residuals)
 
         elif self.method == 'nn':
