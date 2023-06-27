@@ -19,6 +19,9 @@ from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras.saving import load_model
 
+# float64 as standard
+tf.keras.backend.set_floatx('float64')
+
 
 class TLearner:  # TODO: comment what is what.
     def __init__(self, method):  # TODO: or maybe not give base_learners but method, i.e. : 'lasso', 'rf' or 'nn'
@@ -61,8 +64,13 @@ class TLearner:  # TODO: comment what is what.
             self.mu1_model.fit(x_poly_train[w == 1], y[w == 1])
 
         elif self.method == 'nn':
-            # 1: train mu_0
             print("Training NN for mu_0")
+            # to tensor
+            x = tf.convert_to_tensor(x)
+            y = tf.convert_to_tensor(y)
+            w = tf.convert_to_tensor(w)
+
+            # 1: train mu_0
             self.mu0_model.fit(x[w == 0], y[w == 0],
                                batch_size=100,
                                epochs=100,
@@ -100,8 +108,11 @@ class TLearner:  # TODO: comment what is what.
             predictions = mu1_hats - mu0_hats
 
         elif self.method == 'nn':
-            mu0_hats = self.mu0_model.predict(x, verbose=0)
-            mu1_hats = self.mu1_model.predict(x, verbose=0)
+            # to tensor
+            x = tf.convert_to_tensor(x)
+            # predict
+            mu0_hats = self.mu0_model(x)
+            mu1_hats = self.mu1_model(x)
             predictions = np.reshape(mu1_hats - mu0_hats, (len(x),))
 
         else:
@@ -142,6 +153,10 @@ class SLearner:  # TODO: comment what is what.
 
 
         elif self.method == 'nn':
+            # to tensor
+            x_w = tf.convert_to_tensor(x_w)
+            y = tf.convert_to_tensor(y)
+
             # 1: train mu_x
             print("Training NN for mu_x")
             self.mux_model.fit(x_w, y,
@@ -176,9 +191,13 @@ class SLearner:  # TODO: comment what is what.
             predictions = mu1_hats - mu0_hats
 
         elif self.method == 'nn':
+            # to tensor
+            x_0 = tf.convert_to_tensor(x_0)
+            x_1 = tf.convert_to_tensor(x_1)
+
             # 1: calculate hats of mu_x with X and W=1 or W=0
-            mu0_hats = self.mux_model.predict(x_0, verbose=0)
-            mu1_hats = self.mux_model.predict(x_1, verbose=0)
+            mu0_hats = self.mux_model(x_0)
+            mu1_hats = self.mux_model(x_1)
             predictions = np.reshape(mu1_hats - mu0_hats, (len(x),))
 
         else:
@@ -267,6 +286,11 @@ class XLearner:  # TODO: comment what is what.
             self.ex_model.fit(x_poly_train, w)
 
         elif self.method == 'nn':
+            # to tensor
+            x = tf.convert_to_tensor(x)
+            y = tf.convert_to_tensor(y)
+            w = tf.convert_to_tensor(w)
+
             # 1: train mu_0
             print("Training NN for mu_0")
             self.mu0_model.fit(x[w == 0], y[w == 0],
@@ -275,7 +299,7 @@ class XLearner:  # TODO: comment what is what.
                                callbacks=None,  # include early stopping
                                verbose=0
                                )
-            imputed_1 = y[w == 1] - np.reshape(self.mu0_model.predict(x[w == 1], verbose=0), (len(x[w == 1]),))
+            imputed_1 = y[w == 1] - np.reshape(self.mu0_model(x[w == 1]), (len(x[w == 1]),))
 
             # 2: train mu_1
             print("Training NN for mu_1")
@@ -285,7 +309,7 @@ class XLearner:  # TODO: comment what is what.
                                callbacks=None,  # include early stopping
                                verbose=0
                                )
-            imputed_0 = np.reshape(self.mu1_model.predict(x[w == 0], verbose=0), (len(x[w == 0]),)) - y[w == 0]
+            imputed_0 = np.reshape(self.mu1_model(x[w == 0]), (len(x[w == 0]),)) - y[w == 0]
 
             # 3: train tau_0
             print("Fitting NN for tau_0")
@@ -325,7 +349,6 @@ class XLearner:  # TODO: comment what is what.
             tau_1_hats = self.tau1_model.predict(x)
             # 2: probabilities
             probs = self.ex_model.predict_proba(x)[:, 1]
-            # 3: final predictions
 
         elif self.method == 'lasso':
             # make polynomial features
@@ -334,20 +357,23 @@ class XLearner:  # TODO: comment what is what.
             # 1: calculate hats of tau_0 and tau_1
             tau_0_hats = self.tau0_model.predict(x_poly_test)
             tau_1_hats = self.tau1_model.predict(x_poly_test)
+            # 2: probabilities
             probs = self.ex_model.predict_proba(x_poly_test)[:, 1]
 
         elif self.method == 'nn':
+            x = tf.convert_to_tensor(x)
+
             # 1: calculate hats of tau_0 and tau_1
-            tau_0_hats = np.reshape(self.tau0_model.predict(x, verbose=0), (len(x),))
-            tau_1_hats = np.reshape(self.tau1_model.predict(x, verbose=0), (len(x),))
+            tau_0_hats = np.reshape(self.tau0_model(x), (len(x),))
+            tau_1_hats = np.reshape(self.tau1_model(x), (len(x),))
             # 2: probabilities
-            logit = self.ex_model.predict(x, verbose=0)
+            logit = self.ex_model(x)
             probs = np.reshape(keras.activations.sigmoid(logit), (len(logit, )))
-            # 3: final predictions
 
         else:
             raise NotImplementedError('Base learner method not specified in predict')
 
+        # 3: final predictions
         predictions = probs * tau_0_hats + (1 - probs) * tau_1_hats
         return predictions
 
@@ -417,6 +443,10 @@ class RLearner:
             self.tau_model.fit(x_poly_train, pseudo_outcomes, sample_weight=weights)
 
         elif self.method == 'nn':
+            # to tensor
+            x = tf.convert_to_tensor(x)
+            y = tf.convert_to_tensor(y)
+            w = tf.convert_to_tensor(w)
 
             # 1: fit mu_x
             print('Training NN for mu_x')
@@ -436,8 +466,8 @@ class RLearner:
                               )
 
             # 3: calculate pseudo_outcomes & weights
-            probs = np.reshape(keras.activations.sigmoid(self.ex_model.predict(x, verbose=0)), len(x, ))
-            pseudo_outcomes = (y - np.reshape(self.mux_model.predict(x, verbose=0), (len(x),))) / (w - probs + 0.01)
+            probs = np.reshape(keras.activations.sigmoid(self.ex_model(x)), len(x, ))
+            pseudo_outcomes = (y - np.reshape(self.mux_model(x), (len(x),))) / (w - probs + 0.01)
             weights = (w - probs) ** 2
 
             # 4: fit tau
@@ -464,7 +494,10 @@ class RLearner:
             predictions = self.tau_model.predict(x_poly_test)
 
         elif self.method == 'nn':
-            predictions = np.reshape(self.tau_model.predict(x, verbose=0), (len(x),))
+            # to tensor
+            x = tf.convert_to_tensor(x)
+            # predict
+            predictions = np.reshape(self.tau_model(x), (len(x),))
 
         else:
             raise NotImplementedError('Base learner method not specified in predict')
@@ -550,6 +583,9 @@ class DRLearner:
             self.tau_model.fit(x_poly_train, pseudo_outcomes)
 
         elif self.method == 'nn':
+            x = tf.convert_to_tensor(x)
+            y = tf.convert_to_tensor(y)
+            w = tf.convert_to_tensor(w)
 
             # 1: fit mu_0
             print('Training NN for mu_0')
@@ -578,13 +614,14 @@ class DRLearner:
                               verbose=0
                               )
 
-            probs = np.reshape(keras.activations.sigmoid(self.ex_model.predict(x, verbose=0)), len(x, ))
+            probs = tf.reshape(keras.activations.sigmoid(self.ex_model(x)), len(x, ))
 
             # calculate pseudo_outcomes
-            mu_w = w * self.mu1_model.predict(x, verbose=0) + (1 - w) * self.mu0_model.predict(x, verbose=0)
-            pseudo_outcomes = (w - probs) / (probs * (1 - probs) + 0.01) * (y - mu_w) + self.mu1_model.predict(x,
-                                                                                                        verbose=0) - self.mu0_model.predict(
-                x, verbose=0)
+            mu_0_hats = self.mu0_model(x)
+            mu_1_hats = self.mu1_model(x)
+
+            mu_w = w * mu_1_hats + (1 - w) * mu_0_hats
+            pseudo_outcomes = (w - probs) / (probs * (1 - probs) + 0.01) * (y - mu_w) + mu_1_hats - mu_0_hats
 
             # 4 fit tau
             print('Training NN for tau_x')
@@ -607,7 +644,10 @@ class DRLearner:
             predictions = self.tau_model.predict(x_poly_test)
 
         elif self.method == 'nn':
-            predictions = np.reshape(self.tau_model.predict(x, verbose=0), (len(x),))
+            # to tensor
+            x = tf.convert_to_tensor(x)
+            # predict
+            predictions = np.reshape(self.tau_model(x), (len(x),))
 
         else:
             raise NotImplementedError('Base learner method not specified in predict')
@@ -674,6 +714,10 @@ class RALearner:
             self.tau_model.fit(x_poly_train, pseudo_outcomes)
 
         elif self.method == 'nn':
+            # to tensor
+            x = tf.convert_to_tensor(x)
+            y = tf.convert_to_tensor(y)
+            w = tf.convert_to_tensor(w)
 
             # 1: fit mu_0
             print('Training NN for mu_0')
@@ -694,8 +738,8 @@ class RALearner:
                                )
 
             # calculate pseudo_outcomes
-            mu0_predictions = np.reshape(self.mu0_model.predict(x, verbose=0), (len(x),))
-            mu1_predictions = np.reshape(self.mu1_model.predict(x, verbose=0), (len(x),))
+            mu0_predictions = np.reshape(self.mu0_model(x), (len(x),))
+            mu1_predictions = np.reshape(self.mu1_model(x), (len(x),))
 
             pseudo_outcomes = w * (y - mu0_predictions) + (1 - w) * (mu1_predictions - y)
 
@@ -719,7 +763,10 @@ class RALearner:
             predictions = self.tau_model.predict(x_poly_test)
 
         elif self.method == 'nn':
-            predictions = np.reshape(self.tau_model.predict(x, verbose=0), (len(x),))
+            # to tensor
+            x = tf.convert_to_tensor(x)
+            # predict
+            predictions = np.reshape(self.tau_model(x), (len(x),))
 
         else:
             raise NotImplementedError('Base learner method not specified in predict')
@@ -781,6 +828,10 @@ class PWLearner:
             self.tau_model.fit(x_poly_train, pseudo_outcomes)
 
         elif self.method == 'nn':
+            # to tensor
+            x = tf.convert_to_tensor(x)
+            y = tf.convert_to_tensor(y)
+            w = tf.convert_to_tensor(w)
 
             # 3: fit ex
             print('Training NN for e_x')
@@ -791,7 +842,7 @@ class PWLearner:
                               verbose=0
                               )
 
-            probs = np.reshape(keras.activations.sigmoid(self.ex_model.predict(x, verbose=0)), len(x, ))
+            probs = np.reshape(keras.activations.sigmoid(self.ex_model(x)), len(x, ))
             counter_probs = 1 - probs
 
             # calculate pseudo_outcomes
@@ -816,7 +867,10 @@ class PWLearner:
             predictions = self.tau_model.predict(x_poly_test)
 
         elif self.method == 'nn':
-            predictions = np.reshape(self.tau_model.predict(x, verbose=0), (len(x),))
+            # to tensor
+            x = tf.convert_to_tensor(x)
+            # predict
+            predictions = np.reshape(self.tau_model(x), (len(x),))
 
         else:
             raise NotImplementedError('Base learner method not specified in predict')
@@ -886,6 +940,10 @@ class ULearner:
             self.tau_model.fit(x_poly_train, residuals)
 
         elif self.method == 'nn':
+            # to tensor
+            x = tf.convert_to_tensor(x)
+            y = tf.convert_to_tensor(y)
+            w = tf.convert_to_tensor(w)
 
             # 1: fit mu_x
             print('Training NN for mu_x')
@@ -905,10 +963,10 @@ class ULearner:
                               verbose=0
                               )
 
-            probs = np.reshape(keras.activations.sigmoid(self.ex_model.predict(x, verbose=0)), len(x, ))
+            probs = tf.reshape(keras.activations.sigmoid(self.ex_model(x)), len(x, ))
 
             # calculate pseudo_outcomes
-            mu_x_predictions = np.reshape(self.mux_model.predict(x, verbose=0), (len(x),))
+            mu_x_predictions = tf.reshape(self.mux_model(x), (len(x),))
             residuals = (y - mu_x_predictions) / (w - probs + 0.01)
 
             # 4 fit tau
@@ -931,7 +989,10 @@ class ULearner:
             predictions = self.tau_model.predict(x_poly_test)
 
         elif self.method == 'nn':
-            predictions = np.reshape(self.tau_model.predict(x, verbose=0), (len(x),))
+            # to tensor
+            x = tf.convert_to_tensor(x)
+            # predict
+            predictions = np.reshape(self.tau_model(x), (len(x),))
 
         else:
             raise NotImplementedError('Base learner method not specified in predict')
