@@ -1,10 +1,9 @@
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
-from tensorflow.keras.saving import load_model
+from DefaultParameters import *
 
-
-''''' Basic Architecture ''''
+''''' Basic Architecture '''''
 
 # 3 layers with 200 units (elu activation), 2 layers with 100 units (elu activations), 1 output layer (linear
 # activation)
@@ -17,11 +16,11 @@ model_25 = keras.Sequential([
     layers.Dense(units=100, activation="relu", name="layer5"),
     layers.Dense(units=1, activation="linear", name="layer6"),
 
-], name="Dense_Neural_Network")
+], name="model_25")
 
 # compile the model
 model_25.compile(
-    optimizer=keras.optimizers.legacy.Adam(),  # Optimizer
+    optimizer=keras.optimizers.legacy.Adam(learning_rate=LEARNING_RATE),  # Optimizer
     # Loss function to minimize
     loss=keras.losses.MeanSquaredError(),
     # List of metrics to monitor
@@ -44,11 +43,11 @@ model_26 = keras.Sequential([
     layers.Dense(units=100, activation="relu", name="layer5"),
     layers.Dense(units=1, activation="linear", name="layer6"),
 
-], name="Dense_Neural_Network")
+], name="model_26")
 
 # compile the model
 model_26.compile(
-    optimizer=keras.optimizers.legacy.Adam(),  # Optimizer
+    optimizer=keras.optimizers.legacy.Adam(learning_rate=LEARNING_RATE),  # Optimizer
     # Loss function to minimize
     loss=keras.losses.MeanSquaredError(),
     # List of metrics to monitor
@@ -70,11 +69,11 @@ model_ex = keras.Sequential([
     layers.Dense(units=100, activation="relu", name="layer5"),
     layers.Dense(units=1, activation="linear", name="layer6"),
 
-], name="Dense_Neural_Network_Classification")
+], name="model_ex")
 
 # compile the model
 model_ex.compile(
-    optimizer=keras.optimizers.legacy.Adam(),  # Optimizer
+    optimizer=keras.optimizers.legacy.Adam(learning_rate=LEARNING_RATE),  # Optimizer
     # Loss function to minimize
     loss=keras.losses.BinaryCrossentropy(from_logits=True, label_smoothing=0.5),
     # List of metrics to monitor
