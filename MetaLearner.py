@@ -12,7 +12,8 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.saving import load_model
 from DefaultParameters import *
-from NeuralNetworks import callback
+
+callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=10, start_from_epoch=100)
 
 # float64 as standard
 tf.keras.backend.set_floatx('float64')
@@ -69,16 +70,18 @@ class TLearner:  # TODO: comment what is what.
             # 1: train mu_0
             self.mu0_model.fit(x[w == 0], y[w == 0],
                                batch_size=100,
-                               epochs=10000,
+                               epochs=N_EPOCHS,
                                callbacks=callback,  # include early stopping
+                               validation_split=0.3,
                                verbose=0
                                )
 
             # 2: train mu_1
             self.mu1_model.fit(x[w == 1], y[w == 1],
                                batch_size=100,
-                               epochs=10000,
+                               epochs=N_EPOCHS,
                                callbacks=callback,  # include early stopping
+                               validation_split=0.3,
                                verbose=0
                                )
 
@@ -153,8 +156,9 @@ class SLearner:  # TODO: comment what is what.
             # 1: train mu_x
             self.mux_model.fit(x_w, y,
                                batch_size=100,
-                               epochs=10000,
+                               epochs=N_EPOCHS,
                                callbacks=callback,  # include early stopping
+                               validation_split=0.3,
                                verbose=0
                                )
 
@@ -276,8 +280,9 @@ class XLearner:  # TODO: comment what is what.
             # 1: train mu_0
             self.mu0_model.fit(x[w == 0], y[w == 0],
                                batch_size=100,
-                               epochs=10000,
+                               epochs=N_EPOCHS,
                                callbacks=callback,  # include early stopping
+                               validation_split=0.3,
                                verbose=0
                                )
             imputed_1 = y[w == 1] - np.reshape(self.mu0_model(x[w == 1]), (len(x[w == 1]),))
@@ -285,8 +290,9 @@ class XLearner:  # TODO: comment what is what.
             # 2: train mu_1
             self.mu1_model.fit(x[w == 1], y[w == 1],
                                batch_size=100,
-                               epochs=10000,
+                               epochs=N_EPOCHS,
                                callbacks=callback,  # include early stopping
+                               validation_split=0.3,
                                verbose=0
                                )
             imputed_0 = np.reshape(self.mu1_model(x[w == 0]), (len(x[w == 0]),)) - y[w == 0]
@@ -294,24 +300,27 @@ class XLearner:  # TODO: comment what is what.
             # 3: train tau_0
             self.tau0_model.fit(x[w == 0], imputed_0,
                                 batch_size=100,
-                                epochs=100,
+                                epochs=N_EPOCHS,
                                 callbacks=callback,  # include early stopping
+                                validation_split=0.3,
                                 verbose=0
                                 )
 
             # 4: train tau_1
             self.tau1_model.fit(x[w == 1], imputed_1,
                                 batch_size=100,
-                                epochs=10000,
+                                epochs=N_EPOCHS,
                                 callbacks=callback,  # include early stopping
+                                validation_split=0.3,
                                 verbose=0
                                 )
 
             # 5: train e_x
             self.ex_model.fit(x, w,
                               batch_size=100,
-                              epochs=10000,
+                              epochs=N_EPOCHS,
                               callbacks=callback,  # include early stopping
+                              validation_split=0.3,
                               verbose=0
                               )
 
@@ -422,15 +431,17 @@ class RLearner:
             # 1: fit mu_x
             self.mux_model.fit(x, y,
                                batch_size=100,
-                               epochs=10000,
+                               epochs=N_EPOCHS,
                                callbacks=callback,
+                               validation_split=0.3,
                                verbose=0
                                )
             # 2: fit ex
             self.ex_model.fit(x, w,
                               batch_size=100,
-                              epochs=10000,
+                              epochs=N_EPOCHS,
                               callbacks=callback,
+                              validation_split=0.3,
                               verbose=0
                               )
 
@@ -443,8 +454,9 @@ class RLearner:
             self.tau_model.fit(x, pseudo_outcomes,
                                sample_weight=weights,
                                batch_size=100,
-                               epochs=10000,
+                               epochs=N_EPOCHS,
                                callbacks=callback,
+                               validation_split=0.3,
                                verbose=0
                                )
 
@@ -549,24 +561,27 @@ class DRLearner:
             # 1: fit mu_0
             self.mu0_model.fit(x[w == 0], y[w == 0],
                                batch_size=100,
-                               epochs=10000,
+                               epochs=N_EPOCHS,
                                callbacks=callback,
+                               validation_split=0.3,
                                verbose=0
                                )
 
             # 2: fit mu_1
             self.mu1_model.fit(x[w == 1], y[w == 1],
                                batch_size=100,
-                               epochs=10000,
+                               epochs=N_EPOCHS,
                                callbacks=callback,
+                               validation_split=0.3,
                                verbose=0
                                )
 
             # 3: fit ex
             self.ex_model.fit(x, w,
                               batch_size=100,
-                              epochs=10000,
+                              epochs=N_EPOCHS,
                               callbacks=callback,
+                              validation_split=0.3,
                               verbose=0
                               )
 
@@ -582,8 +597,9 @@ class DRLearner:
             # 4 fit tau
             self.tau_model.fit(x, pseudo_outcomes,
                                batch_size=100,
-                               epochs=10000,
+                               epochs=N_EPOCHS,
                                callbacks=callback,
+                               validation_split=0.3,
                                verbose=0
                                )
 
@@ -670,16 +686,18 @@ class RALearner:
             # 1: fit mu_0
             self.mu0_model.fit(x[w == 0], y[w == 0],
                                batch_size=100,
-                               epochs=10000,
+                               epochs=N_EPOCHS,
                                callbacks=callback,
+                               validation_split=0.3,
                                verbose=0
                                )
 
             # 2: fit mu_1
             self.mu1_model.fit(x[w == 1], y[w == 1],
                                batch_size=100,
-                               epochs=10000,
+                               epochs=N_EPOCHS,
                                callbacks=callback,
+                               validation_split=0.3,
                                verbose=0
                                )
 
@@ -692,8 +710,9 @@ class RALearner:
             # 4 fit tau
             self.tau_model.fit(x, pseudo_outcomes,
                                batch_size=100,
-                               epochs=10000,
+                               epochs=N_EPOCHS,
                                callbacks=callback,
+                               validation_split=0.3,
                                verbose=0
                                )
 
@@ -776,8 +795,9 @@ class PWLearner:
             # 3: fit ex
             self.ex_model.fit(x, w,
                               batch_size=100,
-                              epochs=10000,
+                              epochs=N_EPOCHS,
                               callbacks=callback,
+                              validation_split=0.3,
                               verbose=0
                               )
 
@@ -785,13 +805,14 @@ class PWLearner:
             counter_probs = 1 - probs
 
             # calculate pseudo_outcomes
-            pseudo_outcomes = (w / (probs + 0.01) - (1 - w) / (counter_probs + 0.01)) * y
+            pseudo_outcomes = ((w / (probs + 0.01)) - ((1 - w) / (counter_probs + 0.01))) * y
 
             # 4 fit tau
             self.tau_model.fit(x, pseudo_outcomes,
                                batch_size=100,
-                               epochs=10000,
+                               epochs=N_EPOCHS,
                                callbacks=callback,
+                               validation_split=0.3,
                                verbose=0
                                )
 
@@ -879,16 +900,18 @@ class ULearner:
             # 1: fit mu_x
             self.mux_model.fit(x, y,
                                batch_size=100,
-                               epochs=10000,
+                               epochs=N_EPOCHS,
                                callbacks=callback,
+                               validation_split=0.3,
                                verbose=0
                                )
 
             # 3: fit ex
             self.ex_model.fit(x, w,
                               batch_size=100,
-                              epochs=10000,
+                              epochs=N_EPOCHS,
                               callbacks=callback,
+                              validation_split=0.3,
                               verbose=0
                               )
 
@@ -901,8 +924,9 @@ class ULearner:
             # 4 fit tau
             self.tau_model.fit(x, residuals,
                                batch_size=100,
-                               epochs=10000,
+                               epochs=N_EPOCHS,
                                callbacks=callback,
+                               validation_split=0.3,
                                verbose=0
                                )
 

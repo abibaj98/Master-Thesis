@@ -25,6 +25,8 @@ model_25.compile(
     loss=keras.losses.MeanSquaredError(),
     # List of metrics to monitor
     metrics=[keras.metrics.MeanSquaredError()],
+    # weighted metrics
+    weighted_metrics=[]
 )
 
 # save the model
@@ -52,6 +54,8 @@ model_26.compile(
     loss=keras.losses.MeanSquaredError(),
     # List of metrics to monitor
     metrics=[keras.metrics.MeanSquaredError()],
+    # weighted metrics
+    weighted_metrics=[]
 )
 
 # save the model
@@ -78,6 +82,8 @@ model_ex.compile(
     loss=keras.losses.BinaryCrossentropy(from_logits=True, label_smoothing=0.5),
     # List of metrics to monitor
     metrics=keras.metrics.BinaryAccuracy(),
+    # weighted metrics
+    weighted_metrics=[]
 )
 
 # save the model
