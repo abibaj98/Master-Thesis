@@ -805,7 +805,8 @@ class PWLearner:
             counter_probs = 1 - probs
 
             # calculate pseudo_outcomes
-            pseudo_outcomes = ((w / (probs + 0.01)) - ((1 - w) / (counter_probs + 0.01))) * y
+            pseudo_outcomes = (w / (probs + EPSILON) - (1 - w) / (counter_probs + EPSILON)) * y
+
 
             # 4 fit tau
             self.tau_model.fit(x, pseudo_outcomes,
