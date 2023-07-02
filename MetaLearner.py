@@ -1,9 +1,8 @@
 # import packages
-import numpy as np
 
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
-from sklearn.linear_model import LogisticRegression, LogisticRegressionCV
-from sklearn.linear_model import Lasso, LassoCV
+from sklearn.linear_model import LogisticRegressionCV
+from sklearn.linear_model import LassoCV
 from sklearn.preprocessing import PolynomialFeatures
 
 from sklearn.model_selection import KFold
@@ -33,14 +32,14 @@ class TLearner:  # TODO: comment what is what.
                                                    random_state=RF_RANDOM_STATE,
                                                    max_features=MAX_FEATURES)
         elif method == 'lasso':
-            self.mu0_model = LassoCV(cv=10, tol=1e-2, random_state=0, max_iter=100000)
-            self.mu1_model = LassoCV(cv=10, tol=1e-2, random_state=0, max_iter=100000)
-            self.poly = PolynomialFeatures(degree=3, interaction_only=False, include_bias=False)
+            self.mu0_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=LASSO_RANDOM_STATE, max_iter=MAX_ITER)
+            self.mu1_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=LASSO_RANDOM_STATE, max_iter=MAX_ITER)
+            self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
         elif method == 'nn':
             self.mu0_model = load_model('model_25')
             self.mu1_model = load_model('model_25')
         else:
-            raise NotImplementedError('Base learner method not specified')
+            raise NotImplementedError('Base learner method not or vot correctly specified')
 
     def fit(self,
             x, y, w):  # TODO: training process
@@ -69,27 +68,27 @@ class TLearner:  # TODO: comment what is what.
 
             # 1: train mu_0
             self.mu0_model.fit(x[w == 0], y[w == 0],
-                               batch_size=100,
+                               batch_size=BATCH_SIZE,
                                epochs=N_EPOCHS,
-                               callbacks=callback,  # include early stopping
-                               validation_split=0.3,
+                               callbacks=callback,
+                               validation_split=VALIDATION_SPLIT,
                                verbose=0
                                )
 
             # 2: train mu_1
             self.mu1_model.fit(x[w == 1], y[w == 1],
-                               batch_size=100,
+                               batch_size=BATCH_SIZE,
                                epochs=N_EPOCHS,
-                               callbacks=callback,  # include early stopping
-                               validation_split=0.3,
+                               callbacks=callback,
+                               validation_split=VALIDATION_SPLIT,
                                verbose=0
                                )
 
         else:
-            raise NotImplementedError('Base learner method not specified in fit')
+            raise NotImplementedError('Base learner method not specified')
 
     def predict(self,
-                x):  # TODO:
+                x):
         if self.method == 'rf':
             # 1: calculate hats of mu_1 & mu_0
             mu0_hats = self.mu0_model.predict(x)
@@ -114,26 +113,27 @@ class TLearner:  # TODO: comment what is what.
             predictions = np.reshape(mu1_hats - mu0_hats, (len(x),))
 
         else:
-            raise NotImplementedError('Base learner method not specified in predict')
+            raise NotImplementedError('Base learner method not specified')
         return predictions
 
 
 class SLearner:  # TODO: comment what is what.
-    def __init__(self, method):  # TODO: or maybe not give base_learners but method, i.e. : 'lasso', 'rf' or 'nn'
+    def __init__(self, method):
         self.method = method
 
         if method == 'rf':
-            self.mux_model = RandomForestRegressor(n_estimators=1000, max_depth=100, random_state=0)
+            self.mux_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
+                                                   random_state=RF_RANDOM_STATE)
         elif method == 'lasso':
-            self.mux_model = LassoCV(cv=10, tol=1e-2, random_state=0, max_iter=100000)
-            self.poly = PolynomialFeatures(degree=3, interaction_only=False, include_bias=False)
+            self.mux_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=LASSO_RANDOM_STATE, max_iter=MAX_ITER)
+            self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
         elif method == 'nn':
             self.mux_model = load_model('model_26')
         else:
             raise NotImplementedError('Base learner method not specified')
 
     def fit(self,
-            x, y, w):  # TODO: training process
+            x, y, w):
         x_w = np.concatenate((x, np.reshape(w, (len(w), 1))), axis=1)
 
         if self.method == 'rf':
@@ -147,21 +147,18 @@ class SLearner:  # TODO: comment what is what.
             # 1: train mu_x
             self.mux_model.fit(x_poly_train, y)
 
-
         elif self.method == 'nn':
             # to tensor
             x_w = tf.convert_to_tensor(x_w)
             y = tf.convert_to_tensor(y)
-
             # 1: train mu_x
             self.mux_model.fit(x_w, y,
-                               batch_size=100,
+                               batch_size=BATCH_SIZE,
                                epochs=N_EPOCHS,
                                callbacks=callback,  # include early stopping
-                               validation_split=0.3,
+                               validation_split=VALIDATION_SPLIT,
                                verbose=0
                                )
-
         else:
             raise NotImplementedError('Base learner method not specified in fit')
 
@@ -190,7 +187,6 @@ class SLearner:  # TODO: comment what is what.
             # to tensor
             x_0 = tf.convert_to_tensor(x_0)
             x_1 = tf.convert_to_tensor(x_1)
-
             # 1: calculate hats of mu_x with X and W=1 or W=0
             mu0_hats = self.mux_model(x_0)
             mu1_hats = self.mux_model(x_1)
@@ -198,6 +194,7 @@ class SLearner:  # TODO: comment what is what.
 
         else:
             raise NotImplementedError('Base learner method not specified in predict')
+
         return predictions
 
 
@@ -206,20 +203,27 @@ class XLearner:  # TODO: comment what is what.
         self.method = method
 
         if method == 'rf':
-            self.mu0_model = RandomForestRegressor(n_estimators=100, max_depth=100, random_state=0)
-            self.mu1_model = RandomForestRegressor(n_estimators=100, max_depth=100, random_state=0)
-            self.ex_model = RandomForestClassifier(max_depth=100, random_state=0)
-            self.tau0_model = RandomForestRegressor(n_estimators=100, max_depth=100, random_state=0)
-            self.tau1_model = RandomForestRegressor(n_estimators=100, max_depth=100, random_state=0)
+            self.mu0_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
+                                                   random_state=RF_RANDOM_STATE)
+            self.mu1_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
+                                                   random_state=RF_RANDOM_STATE)
+            self.ex_model = RandomForestClassifier(n_estimators=N_TREES, max_depth=MAX_DEPTH,
+                                                   random_state=RF_RANDOM_STATE)
+            self.tau0_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
+                                                    random_state=RF_RANDOM_STATE)
+            self.tau1_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
+                                                    random_state=RF_RANDOM_STATE)
 
         elif method == 'lasso':
-            self.mu0_model = LassoCV(cv=10, tol=1, random_state=0, max_iter=100000)
-            self.mu1_model = LassoCV(cv=10, tol=1, random_state=0, max_iter=100000)
-            self.ex_model = LogisticRegressionCV(cv=KFold(10), penalty='l1', solver='saga', tol=1, random_state=0,
-                                                 max_iter=100000)
-            self.tau0_model = LassoCV(cv=10, tol=1, random_state=0, max_iter=100000)
-            self.tau1_model = LassoCV(cv=10, tol=1, random_state=0, max_iter=100000)
-            self.poly = PolynomialFeatures(degree=3, interaction_only=False, include_bias=False)
+            self.mu0_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=0,
+                                     max_iter=100000)  # TOLERANCE was 1 here!
+            self.mu1_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=0, max_iter=100000)
+            self.ex_model = LogisticRegressionCV(cv=KFold(K_FOLDS), penalty='l1', solver='saga', tol=TOLERANCE,
+                                                 random_state=LASSO_RANDOM_STATE,
+                                                 max_iter=MAX_ITER)
+            self.tau0_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=LASSO_RANDOM_STATE, max_iter=MAX_ITER)
+            self.tau1_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=LASSO_RANDOM_STATE, max_iter=MAX_ITER)
+            self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
 
         elif method == 'nn':
             self.mu0_model = load_model('model_25')
@@ -279,53 +283,53 @@ class XLearner:  # TODO: comment what is what.
 
             # 1: train mu_0
             self.mu0_model.fit(x[w == 0], y[w == 0],
-                               batch_size=100,
+                               batch_size=BATCH_SIZE,
                                epochs=N_EPOCHS,
-                               callbacks=callback,  # include early stopping
-                               validation_split=0.3,
+                               callbacks=callback,
+                               validation_split=VALIDATION_SPLIT,
                                verbose=0
                                )
             imputed_1 = y[w == 1] - np.reshape(self.mu0_model(x[w == 1]), (len(x[w == 1]),))
 
             # 2: train mu_1
             self.mu1_model.fit(x[w == 1], y[w == 1],
-                               batch_size=100,
+                               batch_size=BATCH_SIZE,
                                epochs=N_EPOCHS,
-                               callbacks=callback,  # include early stopping
-                               validation_split=0.3,
+                               callbacks=callback,
+                               validation_split=VALIDATION_SPLIT,
                                verbose=0
                                )
             imputed_0 = np.reshape(self.mu1_model(x[w == 0]), (len(x[w == 0]),)) - y[w == 0]
 
             # 3: train tau_0
             self.tau0_model.fit(x[w == 0], imputed_0,
-                                batch_size=100,
+                                batch_size=BATCH_SIZE,
                                 epochs=N_EPOCHS,
-                                callbacks=callback,  # include early stopping
-                                validation_split=0.3,
+                                callbacks=callback,
+                                validation_split=VALIDATION_SPLIT,
                                 verbose=0
                                 )
 
             # 4: train tau_1
             self.tau1_model.fit(x[w == 1], imputed_1,
-                                batch_size=100,
+                                batch_size=BATCH_SIZE,
                                 epochs=N_EPOCHS,
-                                callbacks=callback,  # include early stopping
-                                validation_split=0.3,
+                                callbacks=callback,
+                                validation_split=VALIDATION_SPLIT,
                                 verbose=0
                                 )
 
             # 5: train e_x
             self.ex_model.fit(x, w,
-                              batch_size=100,
+                              batch_size=BATCH_SIZE,
                               epochs=N_EPOCHS,
-                              callbacks=callback,  # include early stopping
-                              validation_split=0.3,
+                              callbacks=callback,
+                              validation_split=VALIDATION_SPLIT,
                               verbose=0
                               )
 
         else:
-            raise NotImplementedError('Base learner method not specified in fit')
+            raise NotImplementedError('Base learner method not specified')
 
     def predict(self,
                 x):
@@ -339,7 +343,6 @@ class XLearner:  # TODO: comment what is what.
         elif self.method == 'lasso':
             # make polynomial features
             x_poly_test = self.poly.fit_transform(x)
-
             # 1: calculate hats of tau_0 and tau_1
             tau_0_hats = self.tau0_model.predict(x_poly_test)
             tau_1_hats = self.tau1_model.predict(x_poly_test)
@@ -347,8 +350,8 @@ class XLearner:  # TODO: comment what is what.
             probs = self.ex_model.predict_proba(x_poly_test)[:, 1]
 
         elif self.method == 'nn':
+            # to tensor
             x = tf.convert_to_tensor(x)
-
             # 1: calculate hats of tau_0 and tau_1
             tau_0_hats = np.reshape(self.tau0_model(x), (len(x),))
             tau_1_hats = np.reshape(self.tau1_model(x), (len(x),))
@@ -369,16 +372,20 @@ class RLearner:
         self.method = method
 
         if method == 'rf':
-            self.mux_model = RandomForestRegressor(n_estimators=100, max_depth=100, random_state=0)
-            self.ex_model = RandomForestClassifier(max_depth=100, random_state=0)
-            self.tau_model = RandomForestRegressor(n_estimators=100, max_depth=100, random_state=0)
+            self.mux_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
+                                                   random_state=RF_RANDOM_STATE)
+            self.ex_model = RandomForestClassifier(n_estimators=N_TREES, max_depth=MAX_DEPTH,
+                                                   random_state=RF_RANDOM_STATE)
+            self.tau_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
+                                                   random_state=RF_RANDOM_STATE)
 
         elif method == 'lasso':
-            self.mux_model = LassoCV(cv=10, tol=1, random_state=0, max_iter=100000)
-            self.ex_model = LogisticRegressionCV(cv=KFold(10), penalty='l1', solver='saga', tol=1, random_state=0,
-                                                 max_iter=100000)
-            self.tau_model = LassoCV(cv=10, tol=1, random_state=0, max_iter=100000)
-            self.poly = PolynomialFeatures(degree=3, interaction_only=False, include_bias=False)
+            self.mux_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=LASSO_RANDOM_STATE, max_iter=MAX_ITER)
+            self.ex_model = LogisticRegressionCV(cv=KFold(K_FOLDS), penalty='l1', solver='saga', tol=TOLERANCE,
+                                                 random_state=LASSO_RANDOM_STATE,
+                                                 max_iter=MAX_ITER)
+            self.tau_model = LassoCV(cv=K_FOLDS, tol=1, random_state=0, max_iter=MAX_ITER)
+            self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
 
         elif method == 'nn':
             self.mux_model = load_model('model_25')
@@ -386,7 +393,7 @@ class RLearner:
             self.tau_model = load_model('model_25')
 
         else:
-            raise NotImplementedError('Base learner method not specified or typo')
+            raise NotImplementedError('Base learner method not specified')
 
     def fit(self, x, y, w):
 
@@ -397,9 +404,9 @@ class RLearner:
             # 2: fit ex
             self.ex_model.fit(x, w)
 
-            # 3: calculate pseudo_outcomes & weights
+            # 3: calculate pseudo_outcomes & weights TODO: ADD PSEUDO FUNCTION
             probs = self.ex_model.predict_proba(x)[:, 1]
-            pseudo_outcomes = (y - self.mux_model.predict(x)) / (w - probs + 0.01)  # TODO: change these!!!
+            pseudo_outcomes = (y - self.mux_model.predict(x)) / (w - probs + 0.01)
             weights = (w - probs) ** 2
 
             # 4: fit tau
@@ -453,10 +460,10 @@ class RLearner:
             # 4: fit tau
             self.tau_model.fit(x, pseudo_outcomes,
                                sample_weight=weights,
-                               batch_size=100,
+                               batch_size=BATCH_SIZE,
                                epochs=N_EPOCHS,
                                callbacks=callback,
-                               validation_split=0.3,
+                               validation_split=VALIDATION_SPLIT,
                                verbose=0
                                )
 
@@ -488,18 +495,23 @@ class DRLearner:
     def __init__(self, method):
         self.method = method
         if method == 'rf':
-            self.mu0_model = RandomForestRegressor(n_estimators=100, max_depth=100, random_state=0)
-            self.mu1_model = RandomForestRegressor(n_estimators=100, max_depth=100, random_state=0)
-            self.ex_model = RandomForestClassifier(n_estimators=100, max_depth=100, random_state=0)
-            self.tau_model = RandomForestRegressor(n_estimators=100, max_depth=100, random_state=0)
+            self.mu0_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
+                                                   random_state=RF_RANDOM_STATE)
+            self.mu1_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
+                                                   random_state=RF_RANDOM_STATE)
+            self.ex_model = RandomForestClassifier(n_estimators=N_TREES, max_depth=MAX_DEPTH,
+                                                   random_state=RF_RANDOM_STATE)
+            self.tau_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
+                                                   random_state=RF_RANDOM_STATE)
 
         elif method == 'lasso':
-            self.mu0_model = LassoCV(cv=10, tol=1, random_state=0, max_iter=100000)
-            self.mu1_model = LassoCV(cv=10, tol=1, random_state=0, max_iter=100000)
-            self.ex_model = LogisticRegressionCV(cv=KFold(10), penalty='l1', solver='saga', tol=1, random_state=0,
-                                                 max_iter=100000)
-            self.tau_model = LassoCV(cv=10, tol=1, random_state=0, max_iter=100000)
-            self.poly = PolynomialFeatures(degree=3, interaction_only=False, include_bias=False)
+            self.mu0_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=LASSO_RANDOM_STATE, max_iter=MAX_ITER)
+            self.mu1_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=LASSO_RANDOM_STATE, max_iter=MAX_ITER)
+            self.ex_model = LogisticRegressionCV(cv=KFold(K_FOLDS), penalty='l1', solver='saga', tol=TOLERANCE,
+                                                 random_state=LASSO_RANDOM_STATE,
+                                                 max_iter=MAX_ITER)
+            self.tau_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=LASSO_RANDOM_STATE, max_iter=MAX_ITER)
+            self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
 
         elif method == 'nn':
             self.mu0_model = load_model('model_25')
@@ -508,7 +520,7 @@ class DRLearner:
             self.tau_model = load_model('model_25')
 
         else:
-            raise NotImplementedError('Base learner method not specified or typo')
+            raise NotImplementedError('Base learner method not specified')
 
     def fit(self, x, y, w):
 
@@ -522,12 +534,12 @@ class DRLearner:
             # 3: fit ex
             self.ex_model.fit(x, w)
             probs = self.ex_model.predict_proba(x)[:, 1]
-            neg_prob = self.ex_model.predict_proba(x)[:, 0]
+            neg_prob = self.ex_model.predict_proba(x)[:, 0]  # TODO: do this the same everywhere
 
             # calculate pseudo_outcomes
             mu_w = w * self.mu1_model.predict(x) + (1 - w) * self.mu0_model.predict(x)
             pseudo_outcomes = (w - probs) / (probs * neg_prob + 0.01) * (y - mu_w) + self.mu1_model.predict(
-                x) - self.mu0_model.predict(x)  # TODO: CHANGE THESE 0.01s!
+                x) - self.mu0_model.predict(x)
 
             # 4 fit tau
             self.tau_model.fit(x, pseudo_outcomes)
@@ -560,28 +572,28 @@ class DRLearner:
 
             # 1: fit mu_0
             self.mu0_model.fit(x[w == 0], y[w == 0],
-                               batch_size=100,
+                               batch_size=BATCH_SIZE,
                                epochs=N_EPOCHS,
                                callbacks=callback,
-                               validation_split=0.3,
+                               validation_split=VALIDATION_SPLIT,
                                verbose=0
                                )
 
             # 2: fit mu_1
             self.mu1_model.fit(x[w == 1], y[w == 1],
-                               batch_size=100,
+                               batch_size=BATCH_SIZE,
                                epochs=N_EPOCHS,
                                callbacks=callback,
-                               validation_split=0.3,
+                               validation_split=VALIDATION_SPLIT,
                                verbose=0
                                )
 
             # 3: fit ex
             self.ex_model.fit(x, w,
-                              batch_size=100,
+                              batch_size=BATCH_SIZE,
                               epochs=N_EPOCHS,
                               callbacks=callback,
-                              validation_split=0.3,
+                              validation_split=VALIDATION_SPLIT,
                               verbose=0
                               )
 
@@ -596,10 +608,10 @@ class DRLearner:
 
             # 4 fit tau
             self.tau_model.fit(x, pseudo_outcomes,
-                               batch_size=100,
+                               batch_size=BATCH_SIZE,
                                epochs=N_EPOCHS,
                                callbacks=callback,
-                               validation_split=0.3,
+                               validation_split=VALIDATION_SPLIT,
                                verbose=0
                                )
 
@@ -607,7 +619,6 @@ class DRLearner:
 
         if self.method == 'rf':
             predictions = self.tau_model.predict(x)
-
 
         elif self.method == 'lasso':
             x_poly_test = self.poly.fit_transform(x)
@@ -629,15 +640,18 @@ class RALearner:
     def __init__(self, method):
         self.method = method
         if method == 'rf':
-            self.mu0_model = RandomForestRegressor(n_estimators=100, max_depth=100, random_state=0)
-            self.mu1_model = RandomForestRegressor(n_estimators=100, max_depth=100, random_state=0)
-            self.tau_model = RandomForestRegressor(n_estimators=100, max_depth=100, random_state=0)
+            self.mu0_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
+                                                   random_state=RF_RANDOM_STATE)
+            self.mu1_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
+                                                   random_state=RF_RANDOM_STATE)
+            self.tau_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
+                                                   random_state=RF_RANDOM_STATE)
 
         elif method == 'lasso':
-            self.mu0_model = LassoCV(cv=10, tol=1, random_state=0, max_iter=100000)
-            self.mu1_model = LassoCV(cv=10, tol=1, random_state=0, max_iter=100000)
-            self.tau_model = LassoCV(cv=10, tol=1, random_state=0, max_iter=100000)
-            self.poly = PolynomialFeatures(degree=3, interaction_only=False, include_bias=False)
+            self.mu0_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=LASSO_RANDOM_STATE, max_iter=MAX_ITER)
+            self.mu1_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=LASSO_RANDOM_STATE, max_iter=MAX_ITER)
+            self.tau_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=LASSO_RANDOM_STATE, max_iter=MAX_ITER)
+            self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
 
         elif method == 'nn':
             self.mu0_model = load_model('model_25')
@@ -685,19 +699,19 @@ class RALearner:
 
             # 1: fit mu_0
             self.mu0_model.fit(x[w == 0], y[w == 0],
-                               batch_size=100,
+                               batch_size=BATCH_SIZE,
                                epochs=N_EPOCHS,
                                callbacks=callback,
-                               validation_split=0.3,
+                               validation_split=VALIDATION_SPLIT,
                                verbose=0
                                )
 
             # 2: fit mu_1
             self.mu1_model.fit(x[w == 1], y[w == 1],
-                               batch_size=100,
+                               batch_size=BATCH_SIZE,
                                epochs=N_EPOCHS,
                                callbacks=callback,
-                               validation_split=0.3,
+                               validation_split=VALIDATION_SPLIT,
                                verbose=0
                                )
 
@@ -709,17 +723,16 @@ class RALearner:
 
             # 4 fit tau
             self.tau_model.fit(x, pseudo_outcomes,
-                               batch_size=100,
+                               batch_size=BATCH_SIZE,
                                epochs=N_EPOCHS,
                                callbacks=callback,
-                               validation_split=0.3,
+                               validation_split=VALIDATION_SPLIT,
                                verbose=0
                                )
 
     def predict(self, x):
         if self.method == 'rf':
             predictions = self.tau_model.predict(x)
-
 
         elif self.method == 'lasso':
             x_poly_test = self.poly.fit_transform(x)
@@ -732,7 +745,7 @@ class RALearner:
             predictions = np.reshape(self.tau_model(x), (len(x),))
 
         else:
-            raise NotImplementedError('Base learner method not specified in predict')
+            raise NotImplementedError('Base learner method not specified')
 
         return predictions
 
@@ -741,14 +754,17 @@ class PWLearner:
     def __init__(self, method):
         self.method = method
         if method == 'rf':
-            self.ex_model = RandomForestClassifier(n_estimators=100, max_depth=100, random_state=0)
-            self.tau_model = RandomForestRegressor(n_estimators=100, max_depth=100, random_state=0)
+            self.ex_model = RandomForestClassifier(n_estimators=N_TREES, max_depth=MAX_DEPTH,
+                                                   random_state=RF_RANDOM_STATE)
+            self.tau_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
+                                                   random_state=RF_RANDOM_STATE)
 
         elif method == 'lasso':
-            self.ex_model = LogisticRegressionCV(cv=KFold(10), penalty='l1', solver='saga', tol=1, random_state=0,
-                                                 max_iter=100000)
-            self.tau_model = LassoCV(cv=10, tol=1, random_state=0, max_iter=100000)
-            self.poly = PolynomialFeatures(degree=3, interaction_only=False, include_bias=False)
+            self.ex_model = LogisticRegressionCV(cv=KFold(K_FOLDS), penalty='l1', solver='saga', tol=TOLERANCE,
+                                                 random_state=LASSO_RANDOM_STATE,
+                                                 max_iter=TOLERANCE)
+            self.tau_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=LASSO_RANDOM_STATE, max_iter=MAX_ITER)
+            self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
 
         elif method == 'nn':
             self.ex_model = load_model('model_ex')
@@ -766,7 +782,7 @@ class PWLearner:
             counter_probs = self.ex_model.predict_proba(x)[:, 0]
 
             # calculate pseudo_outcomes
-            pseudo_outcomes = (w / (probs + 0.01) - (1 - w) / (counter_probs + 0.01)) * y  # TODO: CHANGE 0.01!
+            pseudo_outcomes = (w / (probs + 0.01) - (1 - w) / (counter_probs + 0.01)) * y
 
             # 4 fit tau
             self.tau_model.fit(x, pseudo_outcomes)
@@ -794,10 +810,10 @@ class PWLearner:
 
             # 3: fit ex
             self.ex_model.fit(x, w,
-                              batch_size=100,
+                              batch_size=BATCH_SIZE,
                               epochs=N_EPOCHS,
                               callbacks=callback,
-                              validation_split=0.3,
+                              validation_split=VALIDATION_SPLIT,
                               verbose=0
                               )
 
@@ -807,17 +823,17 @@ class PWLearner:
             # calculate pseudo_outcomes
             pseudo_outcomes = (w / (probs + EPSILON) - (1 - w) / (counter_probs + EPSILON)) * y
 
-
             # 4 fit tau
             self.tau_model.fit(x, pseudo_outcomes,
-                               batch_size=100,
+                               batch_size=BATCH_SIZE,
                                epochs=N_EPOCHS,
                                callbacks=callback,
-                               validation_split=0.3,
+                               validation_split=VALIDATION_SPLIT,
                                verbose=0
                                )
 
     def predict(self, x):
+
         if self.method == 'rf':
             predictions = self.tau_model.predict(x)
 
@@ -841,16 +857,20 @@ class ULearner:
     def __init__(self, method):
         self.method = method
         if method == 'rf':
-            self.mux_model = RandomForestRegressor(n_estimators=100, max_depth=100, random_state=0)
-            self.ex_model = RandomForestClassifier(n_estimators=100, max_depth=100, random_state=0)
-            self.tau_model = RandomForestRegressor(n_estimators=100, max_depth=100, random_state=0)
+            self.mux_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
+                                                   random_state=RF_RANDOM_STATE)
+            self.ex_model = RandomForestClassifier(n_estimators=N_TREES, max_depth=MAX_DEPTH,
+                                                   random_state=RF_RANDOM_STATE)
+            self.tau_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
+                                                   random_state=RF_RANDOM_STATE)
 
         elif method == 'lasso':
-            self.mux_model = LassoCV(cv=10, tol=1, random_state=0, max_iter=100000)
-            self.ex_model = LogisticRegressionCV(cv=KFold(10), penalty='l1', solver='saga', tol=1, random_state=0,
-                                                 max_iter=100000)
-            self.tau_model = LassoCV(cv=10, tol=1, random_state=0, max_iter=100000)
-            self.poly = PolynomialFeatures(degree=3, interaction_only=False, include_bias=False)
+            self.mux_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=LASSO_RANDOM_STATE, max_iter=MAX_ITER)
+            self.ex_model = LogisticRegressionCV(cv=KFold(K_FOLDS), penalty='l1', solver='saga', tol=TOLERANCE,
+                                                 random_state=LASSO_RANDOM_STATE,
+                                                 max_iter=MAX_ITER)
+            self.tau_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=LASSO_RANDOM_STATE, max_iter=MAX_ITER)
+            self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
 
         elif method == 'nn':
             self.mux_model = load_model('model_25')
@@ -871,7 +891,7 @@ class ULearner:
             probs = self.ex_model.predict_proba(x)[:, 1]
 
             # calculate residuals
-            residuals = (y - self.mux_model.predict(x)) / (w - probs + 0.01)  # TODO: CHANGE 0.01
+            residuals = (y - self.mux_model.predict(x)) / (w - probs + 0.01)
 
             # 4 fit tau
             self.tau_model.fit(x, residuals)
@@ -900,19 +920,19 @@ class ULearner:
 
             # 1: fit mu_x
             self.mux_model.fit(x, y,
-                               batch_size=100,
+                               batch_size=BATCH_SIZE,
                                epochs=N_EPOCHS,
                                callbacks=callback,
-                               validation_split=0.3,
+                               validation_split=VALIDATION_SPLIT,
                                verbose=0
                                )
 
             # 3: fit ex
             self.ex_model.fit(x, w,
-                              batch_size=100,
+                              batch_size=BATCH_SIZE,
                               epochs=N_EPOCHS,
                               callbacks=callback,
-                              validation_split=0.3,
+                              validation_split=VALIDATION_SPLIT,
                               verbose=0
                               )
 
@@ -924,10 +944,10 @@ class ULearner:
 
             # 4 fit tau
             self.tau_model.fit(x, residuals,
-                               batch_size=100,
+                               batch_size=BATCH_SIZE,
                                epochs=N_EPOCHS,
                                callbacks=callback,
-                               validation_split=0.3,
+                               validation_split=VALIDATION_SPLIT,
                                verbose=0
                                )
 
