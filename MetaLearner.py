@@ -216,8 +216,8 @@ class XLearner:  # TODO: comment what is what.
 
         elif method == 'lasso':
             self.mu0_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=0,
-                                     max_iter=100000)  # TOLERANCE was 1 here!
-            self.mu1_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=0, max_iter=100000)
+                                     max_iter=MAX_ITER)  # TOLERANCE was 1 here!
+            self.mu1_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=0, max_iter=MAX_ITER)
             self.ex_model = LogisticRegressionCV(cv=KFold(K_FOLDS), penalty='l1', solver='saga', tol=TOLERANCE,
                                                  random_state=LASSO_RANDOM_STATE,
                                                  max_iter=MAX_ITER)
