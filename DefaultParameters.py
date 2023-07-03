@@ -3,54 +3,54 @@ import numpy as np
 ''''''''' GENERAL '''''''''
 
 # seeds
-KERAS_SEED = 8953
+KERAS_SEED: int = 8953
 
 
 # epsilon for stable results
-EPSILON = 1e-7
+EPSILON: float = 1e-7
 
 # data generation
-TEST_SIZE = 1000
+TEST_SIZE: int = 1000
 TRAIN_SIZES = [500, 1000, 2000, 5000]
-FEATURE_DIMENSION = 20
+FEATURE_DIMENSION: int = 20
 
 ''''''' NEURAL NETWORKS '''''''
 
 # ARCHITECTURE
-BATCH_SIZE = 100
-N_LAYERS_FIRST_PART = 3
-N_LAYERS_SECOND_PART = 2
-N_UNITS_FIRST_PART = 200
-N_UNITS_SECOND_PART = 100
+BATCH_SIZE: int = 100
+N_LAYERS_FIRST_PART: int = 3
+N_LAYERS_SECOND_PART: int = 2
+N_UNITS_FIRST_PART: int = 200
+N_UNITS_SECOND_PART: int = 100
 NON_LINEARITY = 'relu'
-REGULARIZER = 0
+REGULARIZER = 0  # TODO: add
 
 # EARLY STOPPING
-PATIENCE = 10
-START_FROM = 200
+PATIENCE: int = 10
+START_FROM: int = 200
 VALIDATION_SPLIT: float = 0.3
 
 # OPTIMIZER
 N_EPOCHS: int = 400
-LEARNING_RATE = 0.0001
+LEARNING_RATE: float = 1e-4
 
 # INPUT/OUTPUT
-INPUT_SIZE = 25
-OUTPUT_SIZE = 1
+INPUT_SIZE: int = 25
+OUTPUT_SIZE: int = 1
 
 ''''''' RANDOM FORESTS '''''''
 # https://github.com/soerenkuenzel/forestry/blob/master/R/forestry.R
-N_TREES = 2000
-MAX_DEPTH = 99
-RF_RANDOM_STATE = 2023
-MAX_FEATURES = 1.0  # justified in: https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html
+N_TREES: int = 2000
+MAX_DEPTH: int = 99
+RF_RANDOM_STATE: int = 2023
+MAX_FEATURES: float = 1.0  # justified in: https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html
 
 
 
 ''''''' LASSO '''''''
-LASSO_RANDOM_STATE = 2023
-K_FOLDS = 10
-MAX_ITER = 100000  # LOOK WHICH NUMBER
-TOLERANCE = 1e-2
+LASSO_RANDOM_STATE: int = 2023
+K_FOLDS: int = 10
+MAX_ITER: int = 100000  # LOOK WHICH NUMBER
+TOLERANCE: float = 1e-2
 DEGREE_POLYNOMIALS: int = 3
 
