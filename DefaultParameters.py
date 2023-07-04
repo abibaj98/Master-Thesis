@@ -1,10 +1,10 @@
-import numpy as np
-
 ''''''''' GENERAL '''''''''
+
+# cross fitting
+CF_FOLDS: int = 2
 
 # seeds
 KERAS_SEED: int = 8953
-
 
 # epsilon for stable results
 EPSILON: float = 1e-7
@@ -40,11 +40,10 @@ OUTPUT_SIZE: int = 1
 
 ''''''' RANDOM FORESTS '''''''
 # https://github.com/soerenkuenzel/forestry/blob/master/R/forestry.R
-N_TREES: int = 2000
+N_TREES: int = 1000
 MAX_DEPTH: int = 99
 RF_RANDOM_STATE: int = 2023
-MAX_FEATURES: float = 1.0  # justified in: https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html
-
+MAX_FEATURES: float = 0.3  # justified in: https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html
 
 
 ''''''' LASSO '''''''
@@ -52,5 +51,4 @@ LASSO_RANDOM_STATE: int = 2023
 K_FOLDS: int = 10
 MAX_ITER: int = 100000  # LOOK WHICH NUMBER
 TOLERANCE: float = 1e-2
-DEGREE_POLYNOMIALS: int = 3
-
+DEGREE_POLYNOMIALS: int = 1

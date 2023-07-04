@@ -1,33 +1,3 @@
-from typing import Any
-
-import numpy as np
-import tensorflow as tf
-
-
-def first_step():
-    pass
-
-
-def second_step():
-    pass
-
-
-def trainer():
-    pass
-
-
-def predictor():
-    pass
-
-
-class NeuralNetworkModel:
-    pass
-
-
-class NNClassification:
-    pass
-
-
 def r_u_pseudo_outcomes(y, w, probs, mu, eps):
     return (y - mu) / (w - probs + eps)
 
@@ -43,5 +13,3 @@ def ra_pseudo_outcomes(y, w, mu0, mu1):
 
 def pw_pseudo_outcomes(y, w, probs, eps):
     return (w / (probs + eps) - (1 - w) / ((1 - probs) + eps)) * y
-
-

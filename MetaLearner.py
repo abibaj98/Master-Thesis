@@ -12,6 +12,9 @@ from tensorflow import keras
 from tensorflow.keras.saving import load_model
 from DefaultParameters import *
 
+import numpy as np
+
+# early stopping setting
 callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=10, start_from_epoch=100)
 
 # float64 as standard
@@ -762,7 +765,7 @@ class PWLearner:
         elif method == 'lasso':
             self.ex_model = LogisticRegressionCV(cv=KFold(K_FOLDS), penalty='l1', solver='saga', tol=TOLERANCE,
                                                  random_state=LASSO_RANDOM_STATE,
-                                                 max_iter=TOLERANCE)
+                                                 max_iter=MAX_ITER)
             self.tau_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=LASSO_RANDOM_STATE, max_iter=MAX_ITER)
             self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
 
