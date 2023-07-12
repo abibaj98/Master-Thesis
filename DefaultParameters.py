@@ -7,7 +7,7 @@ CF_FOLDS: int = 2
 KERAS_SEED: int = 8953
 
 # epsilon for stable results
-EPSILON: float = 1e-7
+EPSILON: float = 1e-5
 
 # data generation
 TEST_SIZE: int = 1000
@@ -49,6 +49,6 @@ MAX_FEATURES: float = 0.3  # justified in: https://scikit-learn.org/stable/modul
 ''''''' LASSO '''''''
 LASSO_RANDOM_STATE: int = 2023
 K_FOLDS: int = 10
-MAX_ITER: int = 100000  # LOOK WHICH NUMBER
-TOLERANCE: float = 1e-2
-DEGREE_POLYNOMIALS: int = 1
+MAX_ITER: int = 1000000  # LOOK WHICH NUMBER
+TOLERANCE: float = 1
+DEGREE_POLYNOMIALS: int = 3
