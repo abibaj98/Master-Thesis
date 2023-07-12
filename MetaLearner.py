@@ -218,9 +218,9 @@ class XLearner:  # TODO: comment what is what.
                                                     random_state=RF_RANDOM_STATE)
 
         elif method == 'lasso':
-            self.mu0_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=0,
-                                     max_iter=MAX_ITER)  # TOLERANCE was 1 here!
-            self.mu1_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=0, max_iter=MAX_ITER)
+            self.mu0_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=LASSO_RANDOM_STATE,
+                                     max_iter=MAX_ITER)
+            self.mu1_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=LASSO_RANDOM_STATE, max_iter=MAX_ITER)
             self.ex_model = LogisticRegressionCV(cv=KFold(K_FOLDS), penalty='l1', solver='saga', tol=TOLERANCE,
                                                  random_state=LASSO_RANDOM_STATE,
                                                  max_iter=MAX_ITER)
@@ -387,7 +387,7 @@ class RLearner:
             self.ex_model = LogisticRegressionCV(cv=KFold(K_FOLDS), penalty='l1', solver='saga', tol=TOLERANCE,
                                                  random_state=LASSO_RANDOM_STATE,
                                                  max_iter=MAX_ITER)
-            self.tau_model = LassoCV(cv=K_FOLDS, tol=1, random_state=0, max_iter=MAX_ITER)
+            self.tau_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=LASSO_RANDOM_STATE, max_iter=MAX_ITER)
             self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
 
         elif method == 'nn':
