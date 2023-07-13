@@ -31,7 +31,7 @@ START_FROM: int = 200
 VALIDATION_SPLIT: float = 0.3
 
 # OPTIMIZER
-N_EPOCHS: int = 400
+N_EPOCHS: int = 10000
 LEARNING_RATE: float = 1e-4
 
 # INPUT/OUTPUT
@@ -42,13 +42,16 @@ OUTPUT_SIZE: int = 1
 # https://github.com/soerenkuenzel/forestry/blob/master/R/forestry.R
 N_TREES: int = 1000
 MAX_DEPTH: int = 99
-RF_RANDOM_STATE: int = 2023
 MAX_FEATURES: float = 0.3  # justified in: https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html
 
 
 ''''''' LASSO '''''''
-LASSO_RANDOM_STATE: int = 2023
 K_FOLDS: int = 10
 MAX_ITER: int = 1000000  # LOOK WHICH NUMBER
 TOLERANCE: float = 1
 DEGREE_POLYNOMIALS: int = 3
+
+""" Random State """
+RANDOM: int = 2023
+
+

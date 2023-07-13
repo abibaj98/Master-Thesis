@@ -15,7 +15,7 @@ from DefaultParameters import *
 import numpy as np
 
 # early stopping setting
-callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=10, start_from_epoch=100)
+CALLBACK = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=10, start_from_epoch=100)
 
 # float64 as standard
 tf.keras.backend.set_floatx('float64')
@@ -28,15 +28,15 @@ class TLearner:  # TODO: comment what is what.
         if method == 'rf':
             self.mu0_model = RandomForestRegressor(n_estimators=N_TREES,
                                                    max_depth=MAX_DEPTH,
-                                                   random_state=RF_RANDOM_STATE,
+                                                   random_state=RANDOM,
                                                    max_features=MAX_FEATURES)
             self.mu1_model = RandomForestRegressor(n_estimators=N_TREES,
                                                    max_depth=MAX_DEPTH,
-                                                   random_state=RF_RANDOM_STATE,
+                                                   random_state=RANDOM,
                                                    max_features=MAX_FEATURES)
         elif method == 'lasso':
-            self.mu0_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=LASSO_RANDOM_STATE, max_iter=MAX_ITER)
-            self.mu1_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=LASSO_RANDOM_STATE, max_iter=MAX_ITER)
+            self.mu0_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
+            self.mu1_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
             self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
         elif method == 'nn':
             self.mu0_model = load_model('model_25')
@@ -73,7 +73,7 @@ class TLearner:  # TODO: comment what is what.
             self.mu0_model.fit(x[w == 0], y[w == 0],
                                batch_size=BATCH_SIZE,
                                epochs=N_EPOCHS,
-                               callbacks=callback,
+                               callbacks=CALLBACK,
                                validation_split=VALIDATION_SPLIT,
                                verbose=0
                                )
@@ -82,7 +82,7 @@ class TLearner:  # TODO: comment what is what.
             self.mu1_model.fit(x[w == 1], y[w == 1],
                                batch_size=BATCH_SIZE,
                                epochs=N_EPOCHS,
-                               callbacks=callback,
+                               callbacks=CALLBACK,
                                validation_split=VALIDATION_SPLIT,
                                verbose=0
                                )
@@ -126,9 +126,9 @@ class SLearner:  # TODO: comment what is what.
 
         if method == 'rf':
             self.mux_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
-                                                   random_state=RF_RANDOM_STATE)
+                                                   random_state=RANDOM)
         elif method == 'lasso':
-            self.mux_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=LASSO_RANDOM_STATE, max_iter=MAX_ITER)
+            self.mux_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
             self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
         elif method == 'nn':
             self.mux_model = load_model('model_26')
@@ -158,7 +158,7 @@ class SLearner:  # TODO: comment what is what.
             self.mux_model.fit(x_w, y,
                                batch_size=BATCH_SIZE,
                                epochs=N_EPOCHS,
-                               callbacks=callback,  # include early stopping
+                               callbacks=CALLBACK,  # include early stopping
                                validation_split=VALIDATION_SPLIT,
                                verbose=0
                                )
@@ -207,25 +207,25 @@ class XLearner:  # TODO: comment what is what.
 
         if method == 'rf':
             self.mu0_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
-                                                   random_state=RF_RANDOM_STATE)
+                                                   random_state=RANDOM)
             self.mu1_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
-                                                   random_state=RF_RANDOM_STATE)
+                                                   random_state=RANDOM)
             self.ex_model = RandomForestClassifier(n_estimators=N_TREES, max_depth=MAX_DEPTH,
-                                                   random_state=RF_RANDOM_STATE)
+                                                   random_state=RANDOM)
             self.tau0_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
-                                                    random_state=RF_RANDOM_STATE)
+                                                    random_state=RANDOM)
             self.tau1_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
-                                                    random_state=RF_RANDOM_STATE)
+                                                    random_state=RANDOM)
 
         elif method == 'lasso':
-            self.mu0_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=LASSO_RANDOM_STATE,
+            self.mu0_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM,
                                      max_iter=MAX_ITER)
-            self.mu1_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=LASSO_RANDOM_STATE, max_iter=MAX_ITER)
+            self.mu1_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
             self.ex_model = LogisticRegressionCV(cv=KFold(K_FOLDS), penalty='l1', solver='saga', tol=TOLERANCE,
-                                                 random_state=LASSO_RANDOM_STATE,
+                                                 random_state=RANDOM,
                                                  max_iter=MAX_ITER)
-            self.tau0_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=LASSO_RANDOM_STATE, max_iter=MAX_ITER)
-            self.tau1_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=LASSO_RANDOM_STATE, max_iter=MAX_ITER)
+            self.tau0_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
+            self.tau1_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
             self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
 
         elif method == 'nn':
@@ -288,7 +288,7 @@ class XLearner:  # TODO: comment what is what.
             self.mu0_model.fit(x[w == 0], y[w == 0],
                                batch_size=BATCH_SIZE,
                                epochs=N_EPOCHS,
-                               callbacks=callback,
+                               callbacks=CALLBACK,
                                validation_split=VALIDATION_SPLIT,
                                verbose=0
                                )
@@ -298,7 +298,7 @@ class XLearner:  # TODO: comment what is what.
             self.mu1_model.fit(x[w == 1], y[w == 1],
                                batch_size=BATCH_SIZE,
                                epochs=N_EPOCHS,
-                               callbacks=callback,
+                               callbacks=CALLBACK,
                                validation_split=VALIDATION_SPLIT,
                                verbose=0
                                )
@@ -308,7 +308,7 @@ class XLearner:  # TODO: comment what is what.
             self.tau0_model.fit(x[w == 0], imputed_0,
                                 batch_size=BATCH_SIZE,
                                 epochs=N_EPOCHS,
-                                callbacks=callback,
+                                callbacks=CALLBACK,
                                 validation_split=VALIDATION_SPLIT,
                                 verbose=0
                                 )
@@ -317,7 +317,7 @@ class XLearner:  # TODO: comment what is what.
             self.tau1_model.fit(x[w == 1], imputed_1,
                                 batch_size=BATCH_SIZE,
                                 epochs=N_EPOCHS,
-                                callbacks=callback,
+                                callbacks=CALLBACK,
                                 validation_split=VALIDATION_SPLIT,
                                 verbose=0
                                 )
@@ -326,7 +326,7 @@ class XLearner:  # TODO: comment what is what.
             self.ex_model.fit(x, w,
                               batch_size=BATCH_SIZE,
                               epochs=N_EPOCHS,
-                              callbacks=callback,
+                              callbacks=CALLBACK,
                               validation_split=VALIDATION_SPLIT,
                               verbose=0
                               )
@@ -376,18 +376,18 @@ class RLearner:
 
         if method == 'rf':
             self.mux_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
-                                                   random_state=RF_RANDOM_STATE)
+                                                   random_state=RANDOM)
             self.ex_model = RandomForestClassifier(n_estimators=N_TREES, max_depth=MAX_DEPTH,
-                                                   random_state=RF_RANDOM_STATE)
+                                                   random_state=RANDOM)
             self.tau_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
-                                                   random_state=RF_RANDOM_STATE)
+                                                   random_state=RANDOM)
 
         elif method == 'lasso':
-            self.mux_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=LASSO_RANDOM_STATE, max_iter=MAX_ITER)
+            self.mux_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
             self.ex_model = LogisticRegressionCV(cv=KFold(K_FOLDS), penalty='l1', solver='saga', tol=TOLERANCE,
-                                                 random_state=LASSO_RANDOM_STATE,
+                                                 random_state=RANDOM,
                                                  max_iter=MAX_ITER)
-            self.tau_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=LASSO_RANDOM_STATE, max_iter=MAX_ITER)
+            self.tau_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
             self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
 
         elif method == 'nn':
@@ -442,7 +442,7 @@ class RLearner:
             self.mux_model.fit(x, y,
                                batch_size=100,
                                epochs=N_EPOCHS,
-                               callbacks=callback,
+                               callbacks=CALLBACK,
                                validation_split=0.3,
                                verbose=0
                                )
@@ -450,7 +450,7 @@ class RLearner:
             self.ex_model.fit(x, w,
                               batch_size=100,
                               epochs=N_EPOCHS,
-                              callbacks=callback,
+                              callbacks=CALLBACK,
                               validation_split=0.3,
                               verbose=0
                               )
@@ -465,7 +465,7 @@ class RLearner:
                                sample_weight=weights,
                                batch_size=BATCH_SIZE,
                                epochs=N_EPOCHS,
-                               callbacks=callback,
+                               callbacks=CALLBACK,
                                validation_split=VALIDATION_SPLIT,
                                verbose=0
                                )
@@ -499,21 +499,21 @@ class DRLearner:
         self.method = method
         if method == 'rf':
             self.mu0_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
-                                                   random_state=RF_RANDOM_STATE)
+                                                   random_state=RANDOM)
             self.mu1_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
-                                                   random_state=RF_RANDOM_STATE)
+                                                   random_state=RANDOM)
             self.ex_model = RandomForestClassifier(n_estimators=N_TREES, max_depth=MAX_DEPTH,
-                                                   random_state=RF_RANDOM_STATE)
+                                                   random_state=RANDOM)
             self.tau_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
-                                                   random_state=RF_RANDOM_STATE)
+                                                   random_state=RANDOM)
 
         elif method == 'lasso':
-            self.mu0_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=LASSO_RANDOM_STATE, max_iter=MAX_ITER)
-            self.mu1_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=LASSO_RANDOM_STATE, max_iter=MAX_ITER)
+            self.mu0_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
+            self.mu1_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
             self.ex_model = LogisticRegressionCV(cv=KFold(K_FOLDS), penalty='l1', solver='saga', tol=TOLERANCE,
-                                                 random_state=LASSO_RANDOM_STATE,
+                                                 random_state=RANDOM,
                                                  max_iter=MAX_ITER)
-            self.tau_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=LASSO_RANDOM_STATE, max_iter=MAX_ITER)
+            self.tau_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
             self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
 
         elif method == 'nn':
@@ -577,7 +577,7 @@ class DRLearner:
             self.mu0_model.fit(x[w == 0], y[w == 0],
                                batch_size=BATCH_SIZE,
                                epochs=N_EPOCHS,
-                               callbacks=callback,
+                               callbacks=CALLBACK,
                                validation_split=VALIDATION_SPLIT,
                                verbose=0
                                )
@@ -586,7 +586,7 @@ class DRLearner:
             self.mu1_model.fit(x[w == 1], y[w == 1],
                                batch_size=BATCH_SIZE,
                                epochs=N_EPOCHS,
-                               callbacks=callback,
+                               callbacks=CALLBACK,
                                validation_split=VALIDATION_SPLIT,
                                verbose=0
                                )
@@ -595,7 +595,7 @@ class DRLearner:
             self.ex_model.fit(x, w,
                               batch_size=BATCH_SIZE,
                               epochs=N_EPOCHS,
-                              callbacks=callback,
+                              callbacks=CALLBACK,
                               validation_split=VALIDATION_SPLIT,
                               verbose=0
                               )
@@ -613,7 +613,7 @@ class DRLearner:
             self.tau_model.fit(x, pseudo_outcomes,
                                batch_size=BATCH_SIZE,
                                epochs=N_EPOCHS,
-                               callbacks=callback,
+                               callbacks=CALLBACK,
                                validation_split=VALIDATION_SPLIT,
                                verbose=0
                                )
@@ -644,16 +644,16 @@ class RALearner:
         self.method = method
         if method == 'rf':
             self.mu0_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
-                                                   random_state=RF_RANDOM_STATE)
+                                                   random_state=RANDOM)
             self.mu1_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
-                                                   random_state=RF_RANDOM_STATE)
+                                                   random_state=RANDOM)
             self.tau_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
-                                                   random_state=RF_RANDOM_STATE)
+                                                   random_state=RANDOM)
 
         elif method == 'lasso':
-            self.mu0_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=LASSO_RANDOM_STATE, max_iter=MAX_ITER)
-            self.mu1_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=LASSO_RANDOM_STATE, max_iter=MAX_ITER)
-            self.tau_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=LASSO_RANDOM_STATE, max_iter=MAX_ITER)
+            self.mu0_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
+            self.mu1_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
+            self.tau_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
             self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
 
         elif method == 'nn':
@@ -704,7 +704,7 @@ class RALearner:
             self.mu0_model.fit(x[w == 0], y[w == 0],
                                batch_size=BATCH_SIZE,
                                epochs=N_EPOCHS,
-                               callbacks=callback,
+                               callbacks=CALLBACK,
                                validation_split=VALIDATION_SPLIT,
                                verbose=0
                                )
@@ -713,7 +713,7 @@ class RALearner:
             self.mu1_model.fit(x[w == 1], y[w == 1],
                                batch_size=BATCH_SIZE,
                                epochs=N_EPOCHS,
-                               callbacks=callback,
+                               callbacks=CALLBACK,
                                validation_split=VALIDATION_SPLIT,
                                verbose=0
                                )
@@ -728,7 +728,7 @@ class RALearner:
             self.tau_model.fit(x, pseudo_outcomes,
                                batch_size=BATCH_SIZE,
                                epochs=N_EPOCHS,
-                               callbacks=callback,
+                               callbacks=CALLBACK,
                                validation_split=VALIDATION_SPLIT,
                                verbose=0
                                )
@@ -758,15 +758,15 @@ class PWLearner:
         self.method = method
         if method == 'rf':
             self.ex_model = RandomForestClassifier(n_estimators=N_TREES, max_depth=MAX_DEPTH,
-                                                   random_state=RF_RANDOM_STATE)
+                                                   random_state=RANDOM)
             self.tau_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
-                                                   random_state=RF_RANDOM_STATE)
+                                                   random_state=RANDOM)
 
         elif method == 'lasso':
             self.ex_model = LogisticRegressionCV(cv=KFold(K_FOLDS), penalty='l1', solver='saga', tol=TOLERANCE,
-                                                 random_state=LASSO_RANDOM_STATE,
+                                                 random_state=RANDOM,
                                                  max_iter=MAX_ITER)
-            self.tau_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=LASSO_RANDOM_STATE, max_iter=MAX_ITER)
+            self.tau_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
             self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
 
         elif method == 'nn':
@@ -815,7 +815,7 @@ class PWLearner:
             self.ex_model.fit(x, w,
                               batch_size=BATCH_SIZE,
                               epochs=N_EPOCHS,
-                              callbacks=callback,
+                              callbacks=CALLBACK,
                               validation_split=VALIDATION_SPLIT,
                               verbose=0
                               )
@@ -830,7 +830,7 @@ class PWLearner:
             self.tau_model.fit(x, pseudo_outcomes,
                                batch_size=BATCH_SIZE,
                                epochs=N_EPOCHS,
-                               callbacks=callback,
+                               callbacks=CALLBACK,
                                validation_split=VALIDATION_SPLIT,
                                verbose=0
                                )
@@ -861,18 +861,18 @@ class ULearner:
         self.method = method
         if method == 'rf':
             self.mux_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
-                                                   random_state=RF_RANDOM_STATE)
+                                                   random_state=RANDOM)
             self.ex_model = RandomForestClassifier(n_estimators=N_TREES, max_depth=MAX_DEPTH,
-                                                   random_state=RF_RANDOM_STATE)
+                                                   random_state=RANDOM)
             self.tau_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
-                                                   random_state=RF_RANDOM_STATE)
+                                                   random_state=RANDOM)
 
         elif method == 'lasso':
-            self.mux_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=LASSO_RANDOM_STATE, max_iter=MAX_ITER)
+            self.mux_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
             self.ex_model = LogisticRegressionCV(cv=KFold(K_FOLDS), penalty='l1', solver='saga', tol=TOLERANCE,
-                                                 random_state=LASSO_RANDOM_STATE,
+                                                 random_state=RANDOM,
                                                  max_iter=MAX_ITER)
-            self.tau_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=LASSO_RANDOM_STATE, max_iter=MAX_ITER)
+            self.tau_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
             self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
 
         elif method == 'nn':
@@ -925,7 +925,7 @@ class ULearner:
             self.mux_model.fit(x, y,
                                batch_size=BATCH_SIZE,
                                epochs=N_EPOCHS,
-                               callbacks=callback,
+                               callbacks=CALLBACK,
                                validation_split=VALIDATION_SPLIT,
                                verbose=0
                                )
@@ -934,7 +934,7 @@ class ULearner:
             self.ex_model.fit(x, w,
                               batch_size=BATCH_SIZE,
                               epochs=N_EPOCHS,
-                              callbacks=callback,
+                              callbacks=CALLBACK,
                               validation_split=VALIDATION_SPLIT,
                               verbose=0
                               )
@@ -949,7 +949,7 @@ class ULearner:
             self.tau_model.fit(x, residuals,
                                batch_size=BATCH_SIZE,
                                epochs=N_EPOCHS,
-                               callbacks=callback,
+                               callbacks=CALLBACK,
                                validation_split=VALIDATION_SPLIT,
                                verbose=0
                                )
