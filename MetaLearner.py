@@ -1,31 +1,19 @@
 # import packages
-
-from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
-from sklearn.linear_model import LogisticRegressionCV
-from sklearn.linear_model import LassoCV
-from sklearn.preprocessing import PolynomialFeatures
-
-from sklearn.model_selection import KFold
-
-import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras.saving import load_model
-from DefaultParameters import *
-
 import numpy as np
-
-# early stopping setting
-CALLBACK = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=10, start_from_epoch=100)
-
-# float64 as standard
-tf.keras.backend.set_floatx('float64')
+from keras.src.callbacks import EarlyStopping
+from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
+from sklearn.linear_model import LassoCV
+from sklearn.linear_model import LogisticRegressionCV
+from sklearn.model_selection import KFold
+from sklearn.preprocessing import PolynomialFeatures
+from HelperFuctions import *
+from NeuralNetworks import *
 
 
 class TLearner:  # TODO: comment what is what.
-    def __init__(self, method):  # TODO: or maybe not give base_learners but method, i.e. : 'lasso', 'rf' or 'nn'
+    def __init__(self, method):
         self.method = method
-
-        if method == 'rf':
+        if self.method == 'rf':
             self.mu0_model = RandomForestRegressor(n_estimators=N_TREES,
                                                    max_depth=MAX_DEPTH,
                                                    random_state=RANDOM,
@@ -34,15 +22,15 @@ class TLearner:  # TODO: comment what is what.
                                                    max_depth=MAX_DEPTH,
                                                    random_state=RANDOM,
                                                    max_features=MAX_FEATURES)
-        elif method == 'lasso':
+        elif self.method == 'lasso':
             self.mu0_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
             self.mu1_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
             self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
-        elif method == 'nn':
-            self.mu0_model = load_model('model_25')
-            self.mu1_model = load_model('model_25')
+        elif self.method == 'nn':
+            self.mu0_model = clone_nn_regression(nn_sequential)
+            self.mu1_model = clone_nn_regression(nn_sequential)
         else:
-            raise NotImplementedError('Base learner method not or vot correctly specified')
+            raise NotImplementedError('Base learner method not or not correctly specified')
 
     def fit(self,
             x, y, w):  # TODO: training process
@@ -123,15 +111,14 @@ class TLearner:  # TODO: comment what is what.
 class SLearner:  # TODO: comment what is what.
     def __init__(self, method):
         self.method = method
-
-        if method == 'rf':
+        if self.method == 'rf':
             self.mux_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
                                                    random_state=RANDOM)
-        elif method == 'lasso':
+        elif self.method == 'lasso':
             self.mux_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
             self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
-        elif method == 'nn':
-            self.mux_model = load_model('model_26')
+        elif self.method == 'nn':
+            self.mux_model = clone_nn_regression(nn_sequential_1)
         else:
             raise NotImplementedError('Base learner method not specified')
 
@@ -204,8 +191,7 @@ class SLearner:  # TODO: comment what is what.
 class XLearner:  # TODO: comment what is what.
     def __init__(self, method):  # TODO: or maybe not give base_learners but method, i.e. : 'lasso', 'rf' or 'nn'
         self.method = method
-
-        if method == 'rf':
+        if self.method == 'rf':
             self.mu0_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
                                                    random_state=RANDOM)
             self.mu1_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
@@ -217,7 +203,7 @@ class XLearner:  # TODO: comment what is what.
             self.tau1_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
                                                     random_state=RANDOM)
 
-        elif method == 'lasso':
+        elif self.method == 'lasso':
             self.mu0_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM,
                                      max_iter=MAX_ITER)
             self.mu1_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
@@ -228,12 +214,12 @@ class XLearner:  # TODO: comment what is what.
             self.tau1_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
             self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
 
-        elif method == 'nn':
-            self.mu0_model = load_model('model_25')
-            self.mu1_model = load_model('model_25')
-            self.ex_model = load_model('model_ex')
-            self.tau0_model = load_model('model_25')
-            self.tau1_model = load_model('model_25')
+        elif self.method == 'nn':
+            self.mu0_model = clone_nn_regression(nn_sequential)
+            self.mu1_model = clone_nn_regression(nn_sequential)
+            self.ex_model = clone_nn_classification(nn_sequential)
+            self.tau0_model = clone_nn_regression(nn_sequential)
+            self.tau1_model = clone_nn_regression(nn_sequential)
         else:
             raise NotImplementedError('Base learner method not specified')
 
@@ -373,8 +359,7 @@ class XLearner:  # TODO: comment what is what.
 class RLearner:
     def __init__(self, method):
         self.method = method
-
-        if method == 'rf':
+        if self.method == 'rf':
             self.mux_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
                                                    random_state=RANDOM)
             self.ex_model = RandomForestClassifier(n_estimators=N_TREES, max_depth=MAX_DEPTH,
@@ -382,7 +367,7 @@ class RLearner:
             self.tau_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
                                                    random_state=RANDOM)
 
-        elif method == 'lasso':
+        elif self.method == 'lasso':
             self.mux_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
             self.ex_model = LogisticRegressionCV(cv=KFold(K_FOLDS), penalty='l1', solver='saga', tol=TOLERANCE,
                                                  random_state=RANDOM,
@@ -390,10 +375,10 @@ class RLearner:
             self.tau_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
             self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
 
-        elif method == 'nn':
-            self.mux_model = load_model('model_25')
-            self.ex_model = load_model('model_ex')
-            self.tau_model = load_model('model_25')
+        elif self.method == 'nn':
+            self.mux_model = clone_nn_regression(nn_sequential)
+            self.ex_model = clone_nn_classification(nn_sequential)
+            self.tau_model = clone_nn_regression(nn_sequential)
 
         else:
             raise NotImplementedError('Base learner method not specified')
@@ -497,7 +482,7 @@ class RLearner:
 class DRLearner:
     def __init__(self, method):
         self.method = method
-        if method == 'rf':
+        if self.method == 'rf':
             self.mu0_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
                                                    random_state=RANDOM)
             self.mu1_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
@@ -507,7 +492,7 @@ class DRLearner:
             self.tau_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
                                                    random_state=RANDOM)
 
-        elif method == 'lasso':
+        elif self.method == 'lasso':
             self.mu0_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
             self.mu1_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
             self.ex_model = LogisticRegressionCV(cv=KFold(K_FOLDS), penalty='l1', solver='saga', tol=TOLERANCE,
@@ -516,11 +501,11 @@ class DRLearner:
             self.tau_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
             self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
 
-        elif method == 'nn':
-            self.mu0_model = load_model('model_25')
-            self.mu1_model = load_model('model_25')
-            self.ex_model = load_model('model_ex')
-            self.tau_model = load_model('model_25')
+        elif self.method == 'nn':
+            self.mu0_model = clone_nn_regression(nn_sequential)
+            self.mu1_model = clone_nn_regression(nn_sequential)
+            self.ex_model = clone_nn_classification(nn_sequential)
+            self.tau_model = clone_nn_regression(nn_sequential)
 
         else:
             raise NotImplementedError('Base learner method not specified')
@@ -642,7 +627,7 @@ class DRLearner:
 class RALearner:
     def __init__(self, method):
         self.method = method
-        if method == 'rf':
+        if self.method == 'rf':
             self.mu0_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
                                                    random_state=RANDOM)
             self.mu1_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
@@ -650,16 +635,16 @@ class RALearner:
             self.tau_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
                                                    random_state=RANDOM)
 
-        elif method == 'lasso':
+        elif self.method == 'lasso':
             self.mu0_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
             self.mu1_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
             self.tau_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
             self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
 
-        elif method == 'nn':
-            self.mu0_model = load_model('model_25')
-            self.mu1_model = load_model('model_25')
-            self.tau_model = load_model('model_25')
+        elif self.method == 'nn':
+            self.mu0_model = clone_nn_regression(nn_sequential)
+            self.mu1_model = clone_nn_regression(nn_sequential)
+            self.tau_model = clone_nn_regression(nn_sequential)
 
         else:
             raise NotImplementedError('Base learner method not specified or typo')
@@ -756,22 +741,22 @@ class RALearner:
 class PWLearner:
     def __init__(self, method):
         self.method = method
-        if method == 'rf':
+        if self.method == 'rf':
             self.ex_model = RandomForestClassifier(n_estimators=N_TREES, max_depth=MAX_DEPTH,
                                                    random_state=RANDOM)
             self.tau_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
                                                    random_state=RANDOM)
 
-        elif method == 'lasso':
+        elif self.method == 'lasso':
             self.ex_model = LogisticRegressionCV(cv=KFold(K_FOLDS), penalty='l1', solver='saga', tol=TOLERANCE,
                                                  random_state=RANDOM,
                                                  max_iter=MAX_ITER)
             self.tau_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
             self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
 
-        elif method == 'nn':
-            self.ex_model = load_model('model_ex')
-            self.tau_model = load_model('model_25')
+        elif self.method == 'nn':
+            self.ex_model = clone_nn_classification(nn_sequential)
+            self.tau_model = clone_nn_regression(nn_sequential)
 
         else:
             raise NotImplementedError('Base learner method not specified or typo')
@@ -859,7 +844,7 @@ class PWLearner:
 class ULearner:
     def __init__(self, method):
         self.method = method
-        if method == 'rf':
+        if self.method == 'rf':
             self.mux_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
                                                    random_state=RANDOM)
             self.ex_model = RandomForestClassifier(n_estimators=N_TREES, max_depth=MAX_DEPTH,
@@ -867,7 +852,7 @@ class ULearner:
             self.tau_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
                                                    random_state=RANDOM)
 
-        elif method == 'lasso':
+        elif self.method == 'lasso':
             self.mux_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
             self.ex_model = LogisticRegressionCV(cv=KFold(K_FOLDS), penalty='l1', solver='saga', tol=TOLERANCE,
                                                  random_state=RANDOM,
@@ -875,10 +860,10 @@ class ULearner:
             self.tau_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
             self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
 
-        elif method == 'nn':
-            self.mux_model = load_model('model_25')
-            self.ex_model = load_model('model_ex')
-            self.tau_model = load_model('model_25')
+        elif self.method == 'nn':
+            self.mux_model = clone_nn_regression(nn_sequential)
+            self.ex_model = clone_nn_classification(nn_sequential)
+            self.tau_model = clone_nn_regression(nn_sequential)
 
         else:
             raise NotImplementedError('Base learner method not specified or typo')
@@ -894,7 +879,7 @@ class ULearner:
             probs = self.ex_model.predict_proba(x)[:, 1]
 
             # calculate residuals
-            residuals = (y - self.mux_model.predict(x)) / (w - probs + 0.01)
+            residuals = (y - self.mux_model.predict(x)) / (w - probs + EPSILON)
 
             # 4 fit tau
             self.tau_model.fit(x, residuals)
@@ -910,7 +895,7 @@ class ULearner:
             probs = self.ex_model.predict_proba(x_poly_train)[:, 1]
 
             # calculate pseudo_outcomes
-            residuals = (y - self.mux_model.predict(x_poly_train)) / (w - probs + 0.01)
+            residuals = (y - self.mux_model.predict(x_poly_train)) / (w - probs + EPSILON)
 
             # 4 fit tau
             self.tau_model.fit(x_poly_train, residuals)
@@ -943,7 +928,7 @@ class ULearner:
 
             # calculate pseudo_outcomes
             mu_x_predictions = tf.reshape(self.mux_model(x), (len(x),))
-            residuals = (y - mu_x_predictions) / (w - probs + 0.01)
+            residuals = (y - mu_x_predictions) / (w - probs + EPSILON)
 
             # 4 fit tau
             self.tau_model.fit(x, residuals,
