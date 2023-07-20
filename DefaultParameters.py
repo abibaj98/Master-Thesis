@@ -7,7 +7,7 @@ CF_FOLDS: int = 2
 KERAS_SEED: int = 8953
 
 # epsilon for stable results
-EPSILON: float = 1e-5
+EPSILON: float = 1e-4
 
 # data generation
 TEST_SIZE: int = 1000

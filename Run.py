@@ -1,7 +1,7 @@
 from MetaLearner import *
-import pickle
 import numpy as np
-import time
+# import time
+import jsonpickle
 
 # set dtype standard
 tf.keras.backend.set_floatx('float64')
@@ -10,13 +10,15 @@ tf.keras.backend.set_floatx('float64')
 tf.keras.utils.set_random_seed(8953)
 
 # load data
-file_name = "/Users/arberimbibaj/Documents/Master Thesis ETH/DataSets /Generated/data_synthetic_one_run.pkl"
-open_file = open(file_name, "rb")
-data = pickle.load(open_file)
-open_file.close()
+file_name = "data_all.json"
+
+# load with jsonpickle
+f = open(file_name, 'r')
+json_str = f.read()
+data = jsonpickle.decode(json_str)
 
 # some values
-n_setups = 1
+n_setups = 24
 sample_sizes = [500, 1000, 2000, 5000]
 n_runs = 1
 
@@ -35,7 +37,7 @@ for i in range(n_setups):
     results.append([])
 
 for i in range(n_setups):
-    for baselearner in range(1):
+    for baselearner in range(3):
         results[i].append([])
 
 dim = data[0][0][0][0].shape[1]  # dimension of x
@@ -78,20 +80,21 @@ for i in range(n_setups):
                                                                                  train_test=1)
             # restart index for metalearner
             m = 0
-            for l in learners:
-                if m % 8 == 0: print(f'BaseLearner')
-                print(f'Learner {m + 1}: {l}')
-                tic = time.time()
+            for learn in learners:
+                if m % 8 == 0:
+                    print(f'BaseLearner: {(m / 8) + 1}')
+                print(f'Learner {m + 1}: {learn}')
+                # tic = time.time()
                 # training and testing MetaLearner.
-                learner = l
+                learner = learn
                 learner.fit(temp_x_train, temp_y_train, temp_w_train)
                 predictions = learner.predict(temp_x_test)
                 temp_mse = ((predictions - temp_tau_test) ** 2).mean()
                 # append mse of specific metalearner to 'mses'.
                 mses[0, m] = temp_mse
                 # print time
-                toc = time.time()
-                print(f'Time: {round(toc - tic, 4)} seconds.')
+                # toc = time.time()
+                # print(f'Time: {round(toc - tic, 4)} seconds.')
                 # update index
                 m += 1
             # append 'mses' to 'size_mse'.
@@ -104,5 +107,3 @@ for i in range(n_setups):
     results[i][0] = setup_mse[:, 0:8]  # random forest
     results[i][1] = setup_mse[:, 8:16]  # lasso
     results[i][2] = setup_mse[:, 16:24]  # neural network
-
-

@@ -2,7 +2,7 @@ import tensorflow as tf
 from tensorflow import keras
 from keras import layers, regularizers, Sequential
 from DefaultParameters import *
-from keras.src.callbacks import EarlyStopping
+from keras.callbacks import EarlyStopping
 
 # float64 as standard
 tf.keras.backend.set_floatx('float64')
@@ -31,5 +31,5 @@ nn_sequential_1: Sequential = keras.Sequential([
 ], name="nn_sequential_1")
 
 # early stopping setting
-CALLBACK: EarlyStopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=PATIENCE,
-                                                           start_from_epoch=START_FROM)
+CALLBACK: EarlyStopping = keras.callbacks.EarlyStopping(monitor='val_loss', patience=PATIENCE,
+                                                        start_from_epoch=START_FROM)
