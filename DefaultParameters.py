@@ -25,14 +25,15 @@ N_UNITS_FIRST_PART: int = 200
 N_UNITS_SECOND_PART: int = 100
 NON_LINEARITY: str = 'relu'
 PENALTY: float = 1e-4
+WEIGHT_DECAY: float = 1e-4
 
 # EARLY STOPPING
-PATIENCE: int = 10
+PATIENCE: int = 5
 START_FROM: int = 50  # TODO: check if this makes it better?
 VALIDATION_SPLIT: float = 0.3
 
 # OPTIMIZER
-N_EPOCHS: int = 10000
+N_EPOCHS: int = 300
 LEARNING_RATE: float = 1e-4
 LABEL_SMOOTHING: float = 0.1
 
