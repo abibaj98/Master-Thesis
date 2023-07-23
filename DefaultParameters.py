@@ -23,7 +23,7 @@ N_LAYERS_FIRST_PART: int = 3
 N_LAYERS_SECOND_PART: int = 2
 N_UNITS_FIRST_PART: int = 200
 N_UNITS_SECOND_PART: int = 100
-NON_LINEARITY: str = 'relu'
+NON_LINEARITY: str = 'elu'
 PENALTY: float = 1e-4
 WEIGHT_DECAY: float = 1e-4
 
