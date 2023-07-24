@@ -119,10 +119,11 @@ for i in range(n_setups):
     for r in range(n_runs):
         print(f'Run: {r + 1}')
         s = 0  # restart index for samplesize
+        # array for all mses for one setup and samplesize.
+        run_mse = np.empty(shape=(0, 24))
         for size in sample_sizes:
             print(f'Sample Size: {s + 1}')
             # array for all mses for one setup and samplesize.
-            run_mse = np.empty(shape=(0, 24))
             # array for all mses in one setup, samplesize and run.
             mses = np.empty(shape=(1, 24))
             # get data for specific setup, samplesize and run.
@@ -155,7 +156,7 @@ for i in range(n_setups):
             run_mse = np.append(run_mse, mses, axis=0)
             # update index
             s += 1
-        # append 'size_mse' to 'setup_mse'.
+            # append 'size_mse' to 'setup_mse'.
         setup_mse = np.append(setup_mse, run_mse, axis=0)
     # append to results
     results[i][0] = setup_mse[:, 0:8]  # random forest
@@ -163,7 +164,7 @@ for i in range(n_setups):
     results[i][2] = setup_mse[:, 16:24]  # neural network
 
 # file name
-file_name = "results_12setups.json"
+file_name = "results_12_setups.json"
 
 # SAVE LIST AS JSON FILE
 f = open(file_name, 'w')
