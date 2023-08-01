@@ -4,41 +4,45 @@ from numpy import random
 from scipy import stats
 import jsonpickle
 
-# import r packages
+# import r packages (only needed to generate the cov matrix of X)
 import rpy2.robjects as robjects
 import rpy2.robjects.packages as rpackages
 
 rpackages.importr("mpower")
 mpower = robjects.packages.importr("mpower")
-
-# set seed from R
-r = robjects.r
-set_seed = r('set.seed')
+set_seed = robjects.r('set.seed')
 
 # seeds for reproducibility
-set_seed(8953)  # R seed
-random.seed(8953)  # numpy seed
+set_seed(2023)  # R seed
+random.seed(2023)  # numpy seed
 
-# some parameters
-sample_sizes = [500, 1000, 2000, 5000]
+##############################################
+# parameters for the Data Generation Process #
+##############################################
+
+# sample_sizes = [500, 1000, 2000, 5000]
+sample_sizes = [1000, 2000, 5000, 10000]
 test_size = 1000
 n_runs = 10  # number of runs
 n_setups = 18  # number of setups
 d = 20  # dimension of X
 
-# all settings of e_x
-exs = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5,  # for settings 1-6
-       0.1, 0.1, 0.1, 0.1, 0.1, 0.1,  # for settings 7-12
-       'beta_balanced', 'beta_balanced', 'beta_balanced', 'beta_balanced', 'beta_balanced',
-       'beta_balanced']  # for settings 13-18
+# all settings of e_x (propensity)
+exs = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5,  # for settings 1-6 (constant ex = 0.5)
+       0.1, 0.1, 0.1, 0.1, 0.1, 0.1,  # for settings 7-12 (constant ex = 0.1)
+       'beta_confounded', 'beta_confounded', 'beta_confounded', 'beta_confounded', 'beta_confounded',
+       'beta_confounded']  # for settings 13-18 (beta confounded)
 
-# all settings of mu_0 / mu_1
+# all settings for the cate tau (each setting three times in combination with the propensity settings)
 cates = ['linear_response', 'non_linear_response', 'indicator_cate', 'linear_cate', 'complex_linear_cate',
          'complex_non_linear_cate'] * 3
 
 
-# Response Surface Settings (mu_0, mu_1, tau)
+###############################################
+# helper functions for the different settings #
+###############################################
 
+# Response Surface Settings (mu_0, mu_1, tau)
 # i): zero cate (linear response surface)
 def linear_response(x, betas):
     # train set
@@ -50,7 +54,6 @@ def linear_response(x, betas):
 
 
 # ii): zero cate (non-linear response surface)
-# TODO: multiple by 5/10!
 def non_linear_response(x):
     # train set
     mu_0 = 5 * np.arctan(x[:, 0]) * np.arctan(x[:, 1])
@@ -90,12 +93,12 @@ def complex_linear_cate(x, betas_0, betas_1):
     return mu_0, mu_1, tau
 
 
+# vi): complex non-linear cate
 # helper function varsigma
 def varsigma_function(x):
     return 2 / (1 + np.exp(-12 * x))  # TODO: before, it was (x - 0,5).
 
 
-# vi): complex non linear cate
 def complex_non_linear_cate(x):
     # train set
     mu_0 = -4 / 2 * varsigma_function(x[:, 0]) * varsigma_function(x[:, 1])
@@ -105,7 +108,7 @@ def complex_non_linear_cate(x):
     return mu_0, mu_1, tau
 
 
-# beta propensities
+# Beta confounded propensity
 def beta_confounded(x):
     beta_dist = stats.beta(a=2, b=4)  # set beta distribution
 
@@ -117,43 +120,43 @@ def beta_confounded(x):
     return e_x
 
 
-mean_X = np.zeros(d)
-cov_X = np.array(mpower.cvine(d=d, alpha=0.5, beta=0.5))
-X = random.multivariate_normal(mean=mean_X, cov=cov_X, size=1000, check_valid='warn')
+#####################################
+# helper functions to generate data #
+#####################################
 
 
+# generate one dataset
 def generate_data(mean, cov, ex, cate, sample_size, betas, betas_0, betas_1):
-    # 1: generated x_train & x_test
-    x_train = random.multivariate_normal(mean=mean, cov=cov, size=sample_size, check_valid='warn')
+    # 1: generated x
+    x = random.multivariate_normal(mean=mean, cov=cov, size=sample_size, check_valid='warn')
 
-    # 2: generate e_0 & e_0
+    # 2: generate e_0 & e_1
     e_0 = random.normal(loc=0.0, scale=1.0, size=sample_size)
     e_1 = random.normal(loc=0.0, scale=1.0, size=sample_size)
 
     # 3: compute mu_0 & mu_1 --> based on setting
     if cate == 'linear_response':  # 'linear response' setting (no treatment effect)
-        mu_0, mu_1, tau = linear_response(x_train, betas)
+        mu_0, mu_1, tau = linear_response(x, betas)
 
     elif cate == 'non_linear_response':  # 'non-linear response' setting (no treatment effect)
-        mu_0, mu_1, tau = non_linear_response(x_train)
+        mu_0, mu_1, tau = non_linear_response(x)
 
     elif cate == 'indicator_cate':  # 'simple indicator cate' setting
-        mu_0, mu_1, tau = simple_indicator_cate(x_train, betas)
+        mu_0, mu_1, tau = simple_indicator_cate(x, betas)
 
     elif cate == 'linear_cate':  # 'simple linear cate' setting
-        mu_0, mu_1, tau = simple_linear_cate(x_train, betas)
+        mu_0, mu_1, tau = simple_linear_cate(x, betas)
 
     elif cate == 'complex_linear_cate':  # 'complex linear cate' setting
-        mu_0, mu_1, tau = complex_linear_cate(x_train, betas_0, betas_1)
+        mu_0, mu_1, tau = complex_linear_cate(x, betas_0, betas_1)
 
     elif cate == 'complex_non_linear_cate':  # 'complex non-linear cate' setting
-        mu_0, mu_1, tau = complex_non_linear_cate(x_train)
+        mu_0, mu_1, tau = complex_non_linear_cate(x)
 
     else:
         raise NotImplementedError('No or incorrect setting specified.')
 
     # 4: create potential outcomes y_0 & y_1
-    # train
     y_0 = mu_0 + e_0
     y_1 = mu_1 + e_1
 
@@ -161,8 +164,8 @@ def generate_data(mean, cov, ex, cate, sample_size, betas, betas_0, betas_1):
     if isinstance(ex, float or int):
         e_x = ex
 
-    elif ex == 'beta_balanced':
-        e_x = beta_confounded(x_train)
+    elif ex == 'beta_confounded':
+        e_x = beta_confounded(x)
 
     else:
         raise NotImplementedError('Propensity method not or incorrectly specified.')
@@ -170,67 +173,60 @@ def generate_data(mean, cov, ex, cate, sample_size, betas, betas_0, betas_1):
     # 6: Generate treatment assignment W
     w = random.binomial(size=sample_size, n=1, p=e_x)
 
-    # 7: Create observed variables Y
+    # 7: Create observed variable Y
     y = np.multiply(w, y_1) + np.multiply(np.ones(sample_size) - w, y_0)
 
-    # 8: Create train & test sets
+    # 8: Create dataset --> columns: [y, X, w, tau]
     dataset = np.concatenate(
-        (np.reshape(y, (sample_size, 1)), x_train, np.reshape(w, (sample_size, 1)), np.reshape(tau, (sample_size, 1))),
+        (np.reshape(y, (sample_size, 1)), x, np.reshape(w, (sample_size, 1)), np.reshape(tau, (sample_size, 1))),
         axis=1)
 
-    # 9: Return both sets
     return dataset
 
 
-# create empty list to save all datasets NEW
-data = []
-for i in range(n_setups):
-    data.append([])
+# create nested empty data list (saves all data)
+dim1 = n_setups
+dim2 = n_runs
+dim3 = len(sample_sizes)
+dim4 = 2  # train/test
 
-for i in range(n_setups):
-    for r in range(n_runs):
-        data[i].append([])
+data = [[[[[] for _ in range(dim4)] for _ in range(dim3)] for _ in range(dim2)] for _ in range(dim1)]
 
-for i in range(n_setups):
-    for r in range(n_runs):
-        for s in range(4):
-            data[i][r].append([])
 
-for i in range(n_setups):
-    for r in range(n_runs):
-        for s in range(4):
-            for t in range(2):
-                data[i][r][s].append([])
+# loop, generates all data
+def generate_all():
+    mean_x = np.zeros(d)
+    for setup in range(n_setups):
+        print(f'Generating setup {setup + 1}')
+        for run in range(n_runs):
+            # cov_x, betas, beta_0 and betas_1 generated once per run
+            cov_x = np.array(mpower.cvine(d=d, alpha=0.5, beta=0.5))
+            betas_run = random.uniform(low=-1, high=1, size=d)
+            betas_0_run = random.uniform(low=-0.5, high=0.5, size=d)
+            betas_1_run = random.uniform(low=-0.5, high=0.5, size=d)
+            for s, size in enumerate(sample_sizes):
+                train_set = generate_data(mean=mean_x, cov=cov_x, ex=exs[setup], cate=cates[setup], sample_size=size,
+                                          betas=betas_run,
+                                          betas_0=betas_0_run, betas_1=betas_1_run)
+                test_set = generate_data(mean=mean_x, cov=cov_x, ex=exs[setup], cate=cates[setup],
+                                         sample_size=test_size,
+                                         betas=betas_run,
+                                         betas_0=betas_0_run, betas_1=betas_1_run)
+                data[setup][run][s][0] = train_set  # add train-set
+                data[setup][run][s][1] = test_set  # add test-set
+    print('DONE')
 
-# mean of X
-mean_X = np.zeros(d)
 
-# simulate data
-for setup in range(n_setups):
-    print(f'Generating setup {setup + 1}')
-    for run in range(n_runs):
-        # cov, betas, beta_0 and betas_1 generated once per run
-        cov_X = np.array(mpower.cvine(d=d, alpha=0.5, beta=0.5))
-        betas_run = random.uniform(low=-1, high=1, size=d)
-        betas_0_run = random.uniform(low=-0.5, high=0.5, size=d)
-        betas_1_run = random.uniform(low=-0.5, high=0.5, size=d)
-        # start sample_size index
-        s = 0
-        for size in sample_sizes:
-            train_set = generate_data(mean=mean_X, cov=cov_X, ex=exs[setup], cate=cates[setup], sample_size=size,
-                                      betas=betas_run,
-                                      betas_0=betas_0_run, betas_1=betas_1_run)
-            test_set = generate_data(mean=mean_X, cov=cov_X, ex=exs[setup], cate=cates[setup], sample_size=test_size,
-                                     betas=betas_run,
-                                     betas_0=betas_0_run, betas_1=betas_1_run)
-            data[setup][run][s][0] = train_set  # add train-set
-            data[setup][run][s][1] = test_set  # add test-set
-            s += 1  # update index
-print('DONE')
+def main():
+    generate_all()
+    # save as json
+    # TODO: change this in final edition
+    file_name = "/Users/arberimbibaj/Documents/Master Thesis ETH/DataSets /Generated/simulated_data_large.json"
+    f = open(file_name, 'w')
+    json_obj = jsonpickle.encode(data)
+    f.write(json_obj)
+    f.close()
 
-# save as json
-file_name = "/Users/arberimbibaj/Documents/Master Thesis ETH/DataSets /Generated/simulated_data.json"
-f = open(file_name, 'w')
-json_obj = jsonpickle.encode(data)
-f.write(json_obj)
-f.close()
+
+if __name__ == "__main__":
+    main()
