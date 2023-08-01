@@ -3,7 +3,8 @@ import numpy as np
 from numpy import random
 from scipy import stats
 import jsonpickle
-
+# import from files
+from default_parameters import *
 # import r packages (only needed to generate the cov matrix of X)
 import rpy2.robjects as robjects
 import rpy2.robjects.packages as rpackages
@@ -21,11 +22,11 @@ random.seed(2023)  # numpy seed
 ##############################################
 
 # sample_sizes = [500, 1000, 2000, 5000]
-sample_sizes = [1000, 2000, 5000, 10000]
-test_size = 1000
-n_runs = 10  # number of runs
-n_setups = 18  # number of setups
-d = 20  # dimension of X
+sample_sizes = TRAIN_SIZES
+test_size = TEST_SIZE
+n_runs = N_RUNS  # number of runs
+n_setups = N_SETUPS  # number of setups
+d = DIMENSION  # dimension of X
 
 # all settings of e_x (propensity)
 exs = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5,  # for settings 1-6 (constant ex = 0.5)

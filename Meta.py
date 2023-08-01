@@ -1,4 +1,5 @@
 # import packages
+import tensorflow as tf
 import keras.activations
 import numpy as np
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
@@ -6,14 +7,15 @@ from sklearn.linear_model import LassoCV
 from sklearn.linear_model import LogisticRegressionCV
 from sklearn.model_selection import KFold, StratifiedKFold
 from sklearn.preprocessing import PolynomialFeatures
-from HelperFuctions import *
-from NeuralNetworks import *
+# import from files
+from default_parameters import *
+from neural_networks import clone_nn_regression, clone_nn_classification, NN_SEQUENTIAL, CALLBACK
 
 
 class TLearner:  # TODO: comment what is what.
     def __init__(self, method):
-        self.name = "TLearner"
         self.method = method
+        self.name = f"TLearner, {self.method}"
 
         if self.method == 'rf':
             self.mu0_model = RandomForestRegressor(n_estimators=N_TREES,
@@ -30,8 +32,8 @@ class TLearner:  # TODO: comment what is what.
             self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
 
         elif self.method == 'nn':
-            self.mu0_model = clone_nn_regression(nn_sequential)
-            self.mu1_model = clone_nn_regression(nn_sequential)
+            self.mu0_model = clone_nn_regression(NN_SEQUENTIAL)
+            self.mu1_model = clone_nn_regression(NN_SEQUENTIAL)
 
         else:
             raise NotImplementedError('Base learner method not or not correctly specified')
@@ -75,9 +77,6 @@ class TLearner:  # TODO: comment what is what.
                                verbose=0
                                )
 
-        else:
-            raise NotImplementedError('Base learner method not specified')
-
     def predict(self,
                 x):
 
@@ -104,15 +103,15 @@ class TLearner:  # TODO: comment what is what.
             predictions = np.array(mu1_hats - mu0_hats).squeeze()
 
         else:
-            raise NotImplementedError('Base learner method not specified')
+            raise NotImplementedError
 
         return predictions
 
 
 class SLearner:
     def __init__(self, method):
-        self.name = "SLearner"
         self.method = method
+        self.name = f"SLearner, {self.method}"
 
         if self.method == 'rf':
             self.mux_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
@@ -123,7 +122,7 @@ class SLearner:
             self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
 
         elif self.method == 'nn':
-            self.mux_model = clone_nn_regression(nn_sequential_1)
+            self.mux_model = clone_nn_regression(NN_SEQUENTIAL)
 
         else:
             raise NotImplementedError('Base learner method not or not correctly specified')
@@ -155,8 +154,6 @@ class SLearner:
                                validation_split=VALIDATION_SPLIT,
                                verbose=0
                                )
-        else:
-            raise NotImplementedError('Base learner method not specified in fit')
 
     def predict(self,
                 x):
@@ -191,15 +188,15 @@ class SLearner:
             predictions = np.array(mu1_hats - mu0_hats).squeeze()
 
         else:
-            raise NotImplementedError('Base learner method not specified in predict')
+            raise NotImplementedError
 
         return predictions
 
 
 class XLearner:  # TODO: comment what is what.
     def __init__(self, method):
-        self.name = "XLearner"
         self.method = method
+        self.name = f"XLearner, {self.method}"
 
         if self.method == 'rf':
             self.ex_model = RandomForestClassifier(n_estimators=N_TREES, max_depth=MAX_DEPTH, random_state=RANDOM)
@@ -215,9 +212,9 @@ class XLearner:  # TODO: comment what is what.
             self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
 
         elif self.method == 'nn':
-            self.ex_model = clone_nn_classification(nn_sequential)
-            self.tau0_model = clone_nn_regression(nn_sequential)
-            self.tau1_model = clone_nn_regression(nn_sequential)
+            self.ex_model = clone_nn_classification(NN_SEQUENTIAL)
+            self.tau0_model = clone_nn_regression(NN_SEQUENTIAL)
+            self.tau1_model = clone_nn_regression(NN_SEQUENTIAL)
 
         else:
             raise NotImplementedError('Base learner method not or not correctly specified')
@@ -258,8 +255,8 @@ class XLearner:  # TODO: comment what is what.
         w_fit = tf.convert_to_tensor(w_fit)
         x_pred = tf.convert_to_tensor(x_pred)
         # set models
-        temp_mu0 = clone_nn_regression(nn_sequential)
-        temp_mu1 = clone_nn_regression(nn_sequential)
+        temp_mu0 = clone_nn_regression(NN_SEQUENTIAL)
+        temp_mu1 = clone_nn_regression(NN_SEQUENTIAL)
         # fit
         temp_mu0.fit(x_fit[w_fit == 0], y_fit[w_fit == 0],
                      batch_size=BATCH_SIZE,
@@ -371,9 +368,6 @@ class XLearner:  # TODO: comment what is what.
                                 verbose=0
                                 )
 
-        else:
-            raise NotImplementedError('Base learner method not specified')
-
     def predict(self,
                 x):
 
@@ -404,7 +398,7 @@ class XLearner:  # TODO: comment what is what.
             probs = np.array(keras.activations.sigmoid(logit)).squeeze()
 
         else:
-            raise NotImplementedError('Base learner method not specified in predict')
+            raise NotImplementedError
 
         # 3: final predictions
         predictions = probs * tau_0_hats + (1 - probs) * tau_1_hats
@@ -413,8 +407,8 @@ class XLearner:  # TODO: comment what is what.
 
 class RLearner:
     def __init__(self, method):
-        self.name = "RLearner"
         self.method = method
+        self.name = f"RLearner, {self.method}"
 
         if self.method == 'rf':
             self.tau_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
@@ -425,7 +419,7 @@ class RLearner:
             self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
 
         elif self.method == 'nn':
-            self.tau_model = clone_nn_regression(nn_sequential)
+            self.tau_model = clone_nn_regression(NN_SEQUENTIAL)
 
         else:
             raise NotImplementedError('Base learner method not or not correctly specified')
@@ -468,8 +462,8 @@ class RLearner:
         w_fit = tf.convert_to_tensor(w_fit)
         x_pred = tf.convert_to_tensor(x_pred)
         # set models
-        temp_mux = clone_nn_regression(nn_sequential)
-        temp_ex = clone_nn_classification(nn_sequential)
+        temp_mux = clone_nn_regression(NN_SEQUENTIAL)
+        temp_ex = clone_nn_classification(NN_SEQUENTIAL)
         # fit
         temp_mux.fit(x_fit, y_fit,
                      batch_size=BATCH_SIZE,
@@ -566,9 +560,6 @@ class RLearner:
                                verbose=0
                                )
 
-        else:
-            raise NotImplementedError('Base learner method not specified')
-
     def predict(self, x):
 
         if self.method == 'rf':
@@ -585,15 +576,15 @@ class RLearner:
             predictions = np.array(self.tau_model(x)).squeeze()
 
         else:
-            raise NotImplementedError('Base learner method not specified in predict')
+            raise NotImplementedError
 
         return predictions
 
 
 class DRLearner:
     def __init__(self, method):
-        self.name = "DRLearner"
         self.method = method
+        self.name = f"DRLearner, {self.method}"
 
         if self.method == 'rf':
             self.ex_model = RandomForestClassifier(n_estimators=N_TREES, max_depth=MAX_DEPTH,
@@ -606,7 +597,7 @@ class DRLearner:
             self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
 
         elif self.method == 'nn':
-            self.tau_model = clone_nn_regression(nn_sequential)
+            self.tau_model = clone_nn_regression(NN_SEQUENTIAL)
 
         else:
             raise NotImplementedError('Base learner method not or not correctly specified')
@@ -655,9 +646,9 @@ class DRLearner:
         w_fit = tf.convert_to_tensor(w_fit)
         x_pred = tf.convert_to_tensor(x_pred)
         # set models
-        temp_mu0 = clone_nn_regression(nn_sequential)
-        temp_mu1 = clone_nn_regression(nn_sequential)
-        temp_ex = clone_nn_classification(nn_sequential)
+        temp_mu0 = clone_nn_regression(NN_SEQUENTIAL)
+        temp_mu1 = clone_nn_regression(NN_SEQUENTIAL)
+        temp_ex = clone_nn_classification(NN_SEQUENTIAL)
         # fit
         temp_mu0.fit(x_fit[w_fit == 0], y_fit[w_fit == 0],
                      batch_size=BATCH_SIZE,
@@ -768,9 +759,6 @@ class DRLearner:
                                verbose=0
                                )
 
-        else:
-            raise NotImplementedError('Base learner method not specified')
-
     def predict(self, x):
 
         if self.method == 'rf':
@@ -787,15 +775,15 @@ class DRLearner:
             predictions = np.array(self.tau_model(x)).squeeze()
 
         else:
-            raise NotImplementedError('Base learner method not specified in predict')
+            raise NotImplementedError
 
         return predictions
 
 
 class RALearner:
     def __init__(self, method):
-        self.name = "RALearner"
         self.method = method
+        self.name = f"RALearner, {self.method}"
 
         if self.method == 'rf':
             self.tau_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
@@ -806,7 +794,7 @@ class RALearner:
             self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
 
         elif self.method == 'nn':
-            self.tau_model = clone_nn_regression(nn_sequential)
+            self.tau_model = clone_nn_regression(NN_SEQUENTIAL)
 
         else:
             raise NotImplementedError('Base learner method not or not correctly specified')
@@ -847,8 +835,8 @@ class RALearner:
         w_fit = tf.convert_to_tensor(w_fit)
         x_pred = tf.convert_to_tensor(x_pred)
         # set models
-        temp_mu0 = clone_nn_regression(nn_sequential)
-        temp_mu1 = clone_nn_regression(nn_sequential)
+        temp_mu0 = clone_nn_regression(NN_SEQUENTIAL)
+        temp_mu1 = clone_nn_regression(NN_SEQUENTIAL)
         # fit
         temp_mu0.fit(x_fit[w_fit == 0], y_fit[w_fit == 0],
                      batch_size=BATCH_SIZE,
@@ -941,9 +929,6 @@ class RALearner:
                                verbose=0
                                )
 
-        else:
-            raise NotImplementedError('Base learner method not specified')
-
     def predict(self, x):
         if self.method == 'rf':
             predictions = self.tau_model.predict(x)
@@ -959,15 +944,15 @@ class RALearner:
             predictions = np.array(self.tau_model(x)).squeeze()
 
         else:
-            raise NotImplementedError('Base learner method not specified')
+            raise NotImplementedError
 
         return predictions
 
 
 class PWLearner:
     def __init__(self, method):
-        self.name = "PWLearner"
         self.method = method
+        self.name = f"PWLearner, {self.method}"
 
         if self.method == 'rf':
             self.tau_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
@@ -978,7 +963,7 @@ class PWLearner:
             self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
 
         elif self.method == 'nn':
-            self.tau_model = clone_nn_regression(nn_sequential)
+            self.tau_model = clone_nn_regression(NN_SEQUENTIAL)
 
         else:
             raise NotImplementedError('Base learner method not or not correctly specified')
@@ -1014,7 +999,7 @@ class PWLearner:
         w_fit = tf.convert_to_tensor(w_fit)
         x_pred = tf.convert_to_tensor(x_pred)
         # set models
-        temp_ex = clone_nn_classification(nn_sequential)
+        temp_ex = clone_nn_classification(NN_SEQUENTIAL)
         # fit
         temp_ex.fit(x_fit, w_fit,
                     batch_size=BATCH_SIZE,
@@ -1097,9 +1082,6 @@ class PWLearner:
                                verbose=0
                                )
 
-        else:
-            raise NotImplementedError('Base learner method not specified')
-
     def predict(self, x):
 
         if self.method == 'rf':
@@ -1116,15 +1098,15 @@ class PWLearner:
             predictions = np.array(self.tau_model(x)).squeeze()
 
         else:
-            raise NotImplementedError('Base learner method not specified in predict')
+            raise NotImplementedError
 
         return predictions
 
 
 class ULearner:
     def __init__(self, method):
-        self.name = "ULearner"
         self.method = method
+        self.name = f"ULearner, {self.method}"
 
         if self.method == 'rf':
             self.mux_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
@@ -1143,9 +1125,9 @@ class ULearner:
             self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
 
         elif self.method == 'nn':
-            self.mux_model = clone_nn_regression(nn_sequential)
-            self.ex_model = clone_nn_classification(nn_sequential)
-            self.tau_model = clone_nn_regression(nn_sequential)
+            self.mux_model = clone_nn_regression(NN_SEQUENTIAL)
+            self.ex_model = clone_nn_classification(NN_SEQUENTIAL)
+            self.tau_model = clone_nn_regression(NN_SEQUENTIAL)
 
         else:
             raise NotImplementedError('Base learner method not or not correctly specified')
@@ -1188,8 +1170,8 @@ class ULearner:
         w_fit = tf.convert_to_tensor(w_fit)
         x_pred = tf.convert_to_tensor(x_pred)
         # set models
-        temp_mux = clone_nn_regression(nn_sequential)
-        temp_ex = clone_nn_classification(nn_sequential)
+        temp_mux = clone_nn_regression(NN_SEQUENTIAL)
+        temp_ex = clone_nn_classification(NN_SEQUENTIAL)
         # fit
         temp_mux.fit(x_fit, y_fit,
                      batch_size=BATCH_SIZE,
@@ -1282,9 +1264,6 @@ class ULearner:
                                verbose=0
                                )
 
-        else:
-            raise NotImplementedError('Base learner method not specified')
-
     def predict(self, x):
         if self.method == 'rf':
             predictions = self.tau_model.predict(x)
@@ -1300,6 +1279,6 @@ class ULearner:
             predictions = np.array(self.tau_model(x)).squeeze()
 
         else:
-            raise NotImplementedError('Base learner method not specified in predict')
+            raise NotImplementedError
 
         return predictions

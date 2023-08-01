@@ -1,13 +1,15 @@
 # import packages
+import tensorflow as tf
+import keras
 import numpy as np
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
 from sklearn.linear_model import LassoCV
 from sklearn.linear_model import LogisticRegressionCV
 from sklearn.model_selection import KFold
 from sklearn.preprocessing import PolynomialFeatures
-from HelperFuctions import *
-from NeuralNetworks import *
-
+# import from files
+from neural_networks import clone_nn_regression, clone_nn_classification, NN_SEQUENTIAL, CALLBACK
+from default_parameters import *
 
 class TLearner:  # TODO: comment what is what.
     def __init__(self, method):
@@ -29,8 +31,8 @@ class TLearner:  # TODO: comment what is what.
             self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
 
         elif self.method == 'nn':
-            self.mu0_model = clone_nn_regression(nn_sequential)
-            self.mu1_model = clone_nn_regression(nn_sequential)
+            self.mu0_model = clone_nn_regression(NN_SEQUENTIAL)
+            self.mu1_model = clone_nn_regression(NN_SEQUENTIAL)
 
         else:
             raise NotImplementedError('Base learner method not or not correctly specified')
@@ -122,7 +124,7 @@ class SLearner:
             self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
 
         elif self.method == 'nn':
-            self.mux_model = clone_nn_regression(nn_sequential_1)
+            self.mux_model = clone_nn_regression(NN_SEQUENTIAL)
 
         else:
             raise NotImplementedError('Base learner method not or not correctly specified')
@@ -224,11 +226,11 @@ class XLearner:  # TODO: comment what is what.
             self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
 
         elif self.method == 'nn':
-            self.mu0_model = clone_nn_regression(nn_sequential)
-            self.mu1_model = clone_nn_regression(nn_sequential)
-            self.ex_model = clone_nn_classification(nn_sequential)
-            self.tau0_model = clone_nn_regression(nn_sequential)
-            self.tau1_model = clone_nn_regression(nn_sequential)
+            self.mu0_model = clone_nn_regression(NN_SEQUENTIAL)
+            self.mu1_model = clone_nn_regression(NN_SEQUENTIAL)
+            self.ex_model = clone_nn_classification(NN_SEQUENTIAL)
+            self.tau0_model = clone_nn_regression(NN_SEQUENTIAL)
+            self.tau1_model = clone_nn_regression(NN_SEQUENTIAL)
 
         else:
             raise NotImplementedError('Base learner method not or not correctly specified')
@@ -375,9 +377,9 @@ class RLearner:
             self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
 
         elif self.method == 'nn':
-            self.mux_model = clone_nn_regression(nn_sequential)
-            self.ex_model = clone_nn_classification(nn_sequential)
-            self.tau_model = clone_nn_regression(nn_sequential)
+            self.mux_model = clone_nn_regression(NN_SEQUENTIAL)
+            self.ex_model = clone_nn_classification(NN_SEQUENTIAL)
+            self.tau_model = clone_nn_regression(NN_SEQUENTIAL)
 
         else:
             raise NotImplementedError('Base learner method not or not correctly specified')
@@ -493,10 +495,10 @@ class DRLearner:
             self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
 
         elif self.method == 'nn':
-            self.mu0_model = clone_nn_regression(nn_sequential)
-            self.mu1_model = clone_nn_regression(nn_sequential)
-            self.ex_model = clone_nn_classification(nn_sequential)
-            self.tau_model = clone_nn_regression(nn_sequential)
+            self.mu0_model = clone_nn_regression(NN_SEQUENTIAL)
+            self.mu1_model = clone_nn_regression(NN_SEQUENTIAL)
+            self.ex_model = clone_nn_classification(NN_SEQUENTIAL)
+            self.tau_model = clone_nn_regression(NN_SEQUENTIAL)
 
         else:
             raise NotImplementedError('Base learner method not or not correctly specified')
@@ -620,9 +622,9 @@ class RALearner:
             self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
 
         elif self.method == 'nn':
-            self.mu0_model = clone_nn_regression(nn_sequential)
-            self.mu1_model = clone_nn_regression(nn_sequential)
-            self.tau_model = clone_nn_regression(nn_sequential)
+            self.mu0_model = clone_nn_regression(NN_SEQUENTIAL)
+            self.mu1_model = clone_nn_regression(NN_SEQUENTIAL)
+            self.tau_model = clone_nn_regression(NN_SEQUENTIAL)
 
         else:
             raise NotImplementedError('Base learner method not or not correctly specified')
@@ -725,8 +727,8 @@ class PWLearner:
             self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
 
         elif self.method == 'nn':
-            self.ex_model = clone_nn_classification(nn_sequential)
-            self.tau_model = clone_nn_regression(nn_sequential)
+            self.ex_model = clone_nn_classification(NN_SEQUENTIAL)
+            self.tau_model = clone_nn_regression(NN_SEQUENTIAL)
 
         else:
             raise NotImplementedError('Base learner method not or not correctly specified')
@@ -821,9 +823,9 @@ class ULearner:
             self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
 
         elif self.method == 'nn':
-            self.mux_model = clone_nn_regression(nn_sequential)
-            self.ex_model = clone_nn_classification(nn_sequential)
-            self.tau_model = clone_nn_regression(nn_sequential)
+            self.mux_model = clone_nn_regression(NN_SEQUENTIAL)
+            self.ex_model = clone_nn_classification(NN_SEQUENTIAL)
+            self.tau_model = clone_nn_regression(NN_SEQUENTIAL)
 
         else:
             raise NotImplementedError('Base learner method not or not correctly specified')
