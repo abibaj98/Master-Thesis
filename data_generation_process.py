@@ -182,6 +182,7 @@ def get_variables(dataset):
     tau = dataset[:, (DIMENSION + 3 - 1)]
     return y, x, w, tau
 
+
 # same for the ihdp dataset
 def get_variables_ihdp(dataset, run):
     y = dataset[run][:, 0]
