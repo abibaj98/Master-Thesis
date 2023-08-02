@@ -11,6 +11,8 @@ from sklearn.preprocessing import PolynomialFeatures
 from neural_networks import clone_nn_regression, clone_nn_classification, NN_SEQUENTIAL, CALLBACK
 from default_parameters import *
 
+
+
 class TLearner:  # TODO: comment what is what.
     def __init__(self, method):
         self.name = "TLearner"
@@ -280,7 +282,7 @@ class XLearner:  # TODO: comment what is what.
                                validation_split=VALIDATION_SPLIT,
                                verbose=0
                                )
-            imputed_1 = y[w == 1] - tf.squeeze(self.mu0_model(x[w == 1]))
+            imputed_1 = y[w == 1] - tf.double(tf.squeeze(self.mu0_model(x[w == 1])))  # TODO: CHANGE TO DOUBLE!
             # 2: train mu_1
             self.mu1_model.fit(x[w == 1], y[w == 1],
                                batch_size=BATCH_SIZE,
