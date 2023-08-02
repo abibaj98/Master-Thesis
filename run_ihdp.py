@@ -44,6 +44,8 @@ def get_variables_ihdp(dataset, run):
 # one setup
 def run_ihdp(runs):
     print("------------------------------------------")
+    print(f'Number of Runs chosen: {runs}')
+    print("------------------------------------------")
     print("Running the experiment on the IHDP dataset")
     print("------------------------------------------")
     all_mse = np.empty(shape=(0, 24))

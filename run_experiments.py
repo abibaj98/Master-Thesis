@@ -4,6 +4,8 @@ from Meta import *
 import numpy as np
 import jsonpickle
 import configargparse
+import time
+
 
 # set dtype standard
 tf.keras.backend.set_floatx('float64')
@@ -19,9 +21,10 @@ f = open(file_name, 'r')
 json_str = f.read()
 data = jsonpickle.decode(json_str)
 
+
 # some parameters  # TODO: add to default_paramters
 # sample_sizes = [500, 1000, 2000, 5000]
-sample_sizes = TRAIN_SIZES
+sample_sizes = SAMPLE_SIZES
 n_runs = N_RUNS
 
 # All MetaLearners in combination with each Baselearner (Random Forest, Linear Models, Neural Network)
@@ -70,6 +73,7 @@ def run_experiment(setting):
                                                                                  samplesize=s, run=r,
                                                                                  train_test=1)
             for m, learn in enumerate(learners):
+                start = time.time()
                 print(f'Learner {m + 1}: {learn.name}')
                 # training and get predictions
                 learner = learn
@@ -79,6 +83,8 @@ def run_experiment(setting):
                 temp_mse = ((predictions - temp_tau_test) ** 2).mean()
                 # append mse of specific metalearner to 'mses'.
                 mses[0, m] = temp_mse
+                end = time.time()
+                print(end-start)
             # append 'mses' to 'size_mse'.
             run_mse = np.append(run_mse, mses, axis=0)
             # append 'size_mse' to 'setup_mse'.
