@@ -22,7 +22,7 @@ random.seed(2023)  # numpy seed
 ##############################################
 
 # sample_sizes = [500, 1000, 2000, 5000]
-sample_sizes = TRAIN_SIZES
+sample_sizes = SAMPLE_SIZES
 test_size = TEST_SIZE
 n_runs = N_RUNS  # number of runs
 n_setups = N_SETUPS  # number of setups
