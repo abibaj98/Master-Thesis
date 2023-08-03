@@ -2,17 +2,15 @@
 
 ''''''' Generals  '''''''
 
-# cross fitting folds, 1 means no cross-fitting
-CF_FOLDS: int = 1
-
 # seeds
 KERAS_SEED: int = 2023  # keras seed
 R_SEED: int = 2023  # r seed
 NP_SEED: int = 2023  # numpy seed
 RANDOM: int = 2023  # random_state for random forest and linear models
 
-# small epsilon added to not divide by zero (for the calculation of some pseudo_outcomes)
-EPSILON: float = 1e-6
+# Clip values for the predicted propensities
+MIN_CLIP = 0.05
+MAX_CLIP = 0.99
 
 # data generation
 TEST_SIZE: int = 1000
