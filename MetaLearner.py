@@ -12,7 +12,6 @@ from neural_networks import clone_nn_regression, clone_nn_classification, NN_SEQ
 from default_parameters import *
 
 
-
 class TLearner:  # TODO: comment what is what.
     def __init__(self, method):
         self.name = "TLearner"
@@ -205,10 +204,6 @@ class XLearner:  # TODO: comment what is what.
         self.method = method
 
         if self.method == 'rf':
-            self.mu0_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
-                                                   random_state=RANDOM)
-            self.mu1_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
-                                                   random_state=RANDOM)
             self.ex_model = RandomForestClassifier(n_estimators=N_TREES, max_depth=MAX_DEPTH,
                                                    random_state=RANDOM)
             self.tau0_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
@@ -217,19 +212,13 @@ class XLearner:  # TODO: comment what is what.
                                                     random_state=RANDOM)
 
         elif self.method == 'lasso':
-            self.mu0_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM,
-                                     max_iter=MAX_ITER)
-            self.mu1_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
             self.ex_model = LogisticRegressionCV(cv=KFold(K_FOLDS), penalty='l1', solver='saga', tol=TOLERANCE,
                                                  random_state=RANDOM,
                                                  max_iter=MAX_ITER)
             self.tau0_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
             self.tau1_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
-            self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
 
         elif self.method == 'nn':
-            self.mu0_model = clone_nn_regression(NN_SEQUENTIAL)
-            self.mu1_model = clone_nn_regression(NN_SEQUENTIAL)
             self.ex_model = clone_nn_classification(NN_SEQUENTIAL)
             self.tau0_model = clone_nn_regression(NN_SEQUENTIAL)
             self.tau1_model = clone_nn_regression(NN_SEQUENTIAL)
@@ -237,15 +226,77 @@ class XLearner:  # TODO: comment what is what.
         else:
             raise NotImplementedError('Base learner method not or not correctly specified')
 
+    @staticmethod
+    def compute_hats_rf(x_fit, y_fit, w_fit, x_pred):
+        # set models
+        temp_mu0 = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH, random_state=RANDOM)
+        temp_mu1 = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH, random_state=RANDOM)
+        # fit
+        temp_mu0.fit(x_fit[w_fit == 0], y_fit[w_fit == 0])
+        temp_mu1.fit(x_fit[w_fit == 1], y_fit[w_fit == 1])
+        # hats
+        mu0_hat = temp_mu0.predict(x_pred)
+        mu1_hat = temp_mu1.predict(x_pred)
+        return mu0_hat, mu1_hat
+
+    @staticmethod
+    def compute_hats_lasso(x_fit, y_fit, w_fit, x_pred):
+        # poly transformation
+        poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
+        x_poly_fit = poly.fit_transform(x_fit)
+        x_poly_pred = poly.fit_transform(x_pred)
+        # set models
+        temp_mu0 = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
+        temp_mu1 = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
+        # fit
+        temp_mu0.fit(x_poly_fit[w_fit == 0], y_fit[w_fit == 0])
+        temp_mu1.fit(x_poly_fit[w_fit == 1], y_fit[w_fit == 1])
+        # hats
+        mu0_hat = temp_mu0.predict(x_poly_pred)
+        mu1_hat = temp_mu1.predict(x_poly_pred)
+        return mu0_hat, mu1_hat
+
+    @staticmethod
+    def compute_hats_nn(x_fit, y_fit, w_fit, x_pred):
+        # to tensor
+        x_fit = tf.convert_to_tensor(x_fit)
+        y_fit = tf.convert_to_tensor(y_fit)
+        w_fit = tf.convert_to_tensor(w_fit)
+        x_pred = tf.convert_to_tensor(x_pred)
+        # set models
+        temp_mu0 = clone_nn_regression(NN_SEQUENTIAL)
+        temp_mu1 = clone_nn_regression(NN_SEQUENTIAL)
+        # fit
+        temp_mu0.fit(x_fit[w_fit == 0], y_fit[w_fit == 0],
+                     batch_size=BATCH_SIZE,
+                     epochs=N_EPOCHS,
+                     callbacks=CALLBACK,
+                     validation_split=VALIDATION_SPLIT,
+                     verbose=0)
+        temp_mu1.fit(x_fit[w_fit == 1], y_fit[w_fit == 1],
+                     batch_size=BATCH_SIZE,
+                     epochs=N_EPOCHS,
+                     callbacks=CALLBACK,
+                     validation_split=VALIDATION_SPLIT,
+                     verbose=0)
+        # hats
+        mu0_hat = tf.squeeze(temp_mu0(x_pred))
+        mu1_hat = tf.squeeze(temp_mu1(x_pred))
+        return mu0_hat, mu1_hat
+
+    @staticmethod
+    def imputed_outcomes(y, w, mu1_hat, mu0_hat):
+        imputed_0 = mu1_hat[w == 0] - y[w == 0]
+        imputed_1 = y[w == 1] - mu0_hat[w == 1]
+        return imputed_0, imputed_1
+
     def fit(self,
             x, y, w):
         if self.method == 'rf':
-            # 1: train mu_0 and get imputed_1
-            self.mu0_model.fit(x[w == 0], y[w == 0])
-            imputed_1 = y[w == 1] - self.mu0_model.predict(x[w == 1])
-            # 2: train mu_1 and get imputed_0
-            self.mu1_model.fit(x[w == 1], y[w == 1])
-            imputed_0 = self.mu1_model.predict(x[w == 0]) - y[w == 0]
+            # compute pseudo outcomes
+            mu0_hat, mu1_hat = self.compute_hats_rf(x, y, w, x)
+            # imputed outcomes
+            imputed_0, imputed_1 = self.imputed_outcomes(y, w, mu1_hat, mu0_hat)
             # 3: train tau_0
             self.tau0_model.fit(x[w == 0], imputed_0)
             # 4: train tau_1
@@ -254,14 +305,13 @@ class XLearner:  # TODO: comment what is what.
             self.ex_model.fit(x, w)
 
         elif self.method == 'lasso':
+            # compute pseudo outcomes
+            mu0_hat, mu1_hat = self.compute_hats_lasso(x, y, w, x)
+            # imputed outcomes
+            imputed_0, imputed_1 = self.imputed_outcomes(y, w, mu1_hat, mu0_hat)
             # make polynomial features
-            x_poly_train = self.poly.fit_transform(x)
-            # 1: train mu_0 and get imputed_1
-            self.mu0_model.fit(x_poly_train[w == 0], y[w == 0])
-            imputed_1 = y[w == 1] - self.mu0_model.predict(x_poly_train[w == 1])
-            # 2: train mu_1 and get imputed_0
-            self.mu1_model.fit(x_poly_train[w == 1], y[w == 1])
-            imputed_0 = self.mu1_model.predict(x_poly_train[w == 0]) - y[w == 0]
+            poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
+            x_poly_train = poly.fit_transform(x)
             # 3: train tau_0
             self.tau0_model.fit(x_poly_train[w == 0], imputed_0)
             # 4: train tau_1
@@ -270,28 +320,10 @@ class XLearner:  # TODO: comment what is what.
             self.ex_model.fit(x_poly_train, w)
 
         elif self.method == 'nn':
-            # to tensor
-            x = tf.convert_to_tensor(x)
-            y = tf.convert_to_tensor(y)
-            w = tf.convert_to_tensor(w)
-            # 1: train mu_0
-            self.mu0_model.fit(x[w == 0], y[w == 0],
-                               batch_size=BATCH_SIZE,
-                               epochs=N_EPOCHS,
-                               callbacks=CALLBACK,
-                               validation_split=VALIDATION_SPLIT,
-                               verbose=0
-                               )
-            imputed_1 = y[w == 1] - tf.double(tf.squeeze(self.mu0_model(x[w == 1])))  # TODO: CHANGE TO DOUBLE!
-            # 2: train mu_1
-            self.mu1_model.fit(x[w == 1], y[w == 1],
-                               batch_size=BATCH_SIZE,
-                               epochs=N_EPOCHS,
-                               callbacks=CALLBACK,
-                               validation_split=VALIDATION_SPLIT,
-                               verbose=0
-                               )
-            imputed_0 = tf.squeeze(self.mu1_model(x[w == 0])) - y[w == 0]
+            # compute pseudo outcomes
+            mu0_hat, mu1_hat = self.compute_hats_nn(x, y, w, x)
+            # imputed outcomes
+            imputed_0, imputed_1 = self.imputed_outcomes(y, w, mu1_hat, mu0_hat)
             # 3: train tau_0
             self.tau0_model.fit(x[w == 0], imputed_0,
                                 batch_size=BATCH_SIZE,
@@ -332,7 +364,8 @@ class XLearner:  # TODO: comment what is what.
 
         elif self.method == 'lasso':
             # make polynomial features
-            x_poly_test = self.poly.fit_transform(x)
+            poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
+            x_poly_test = poly.fit_transform(x)
             # 1: calculate hats of tau_0 and tau_1
             tau_0_hats = self.tau0_model.predict(x_poly_test)
             tau_1_hats = self.tau1_model.predict(x_poly_test)
@@ -363,80 +396,106 @@ class RLearner:
         self.method = method
 
         if self.method == 'rf':
-            self.mux_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
-                                                   random_state=RANDOM)
-            self.ex_model = RandomForestClassifier(n_estimators=N_TREES, max_depth=MAX_DEPTH,
-                                                   random_state=RANDOM)
             self.tau_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
                                                    random_state=RANDOM)
 
         elif self.method == 'lasso':
-            self.mux_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
-            self.ex_model = LogisticRegressionCV(cv=KFold(K_FOLDS), penalty='l1', solver='saga', tol=TOLERANCE,
-                                                 random_state=RANDOM,
-                                                 max_iter=MAX_ITER)
             self.tau_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
             self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
 
         elif self.method == 'nn':
-            self.mux_model = clone_nn_regression(NN_SEQUENTIAL)
-            self.ex_model = clone_nn_classification(NN_SEQUENTIAL)
             self.tau_model = clone_nn_regression(NN_SEQUENTIAL)
 
         else:
             raise NotImplementedError('Base learner method not or not correctly specified')
 
+    @staticmethod
+    def compute_hats_rf(x_fit, y_fit, w_fit, x_pred):
+        # set models
+        temp_mux = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH, random_state=RANDOM)
+        temp_ex = RandomForestClassifier(n_estimators=N_TREES, max_depth=MAX_DEPTH, random_state=RANDOM)
+        # fit
+        temp_mux.fit(x_fit, y_fit)
+        temp_ex.fit(x_fit, w_fit)
+        # hats
+        mux_hat = temp_mux.predict(x_pred)
+        probs = temp_ex.predict_proba(x_pred)[:, 1]
+        return mux_hat, probs
+
+    def compute_hats_lasso(self, x_fit, y_fit, w_fit, x_pred):
+        # poly transformation
+        x_poly_fit = self.poly.fit_transform(x_fit)
+        x_poly_pred = self.poly.fit_transform(x_pred)
+        # set models
+        temp_mux = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
+        temp_ex = LogisticRegressionCV(cv=KFold(K_FOLDS), penalty='l1', solver='saga', tol=TOLERANCE,
+                                       random_state=RANDOM,
+                                       max_iter=MAX_ITER)
+        # fit
+        temp_mux.fit(x_poly_fit, y_fit)
+        temp_ex.fit(x_poly_fit, w_fit)
+        # hats
+        mux_hat = temp_mux.predict(x_poly_pred)
+        probs = temp_ex.predict_proba(x_poly_pred)[:, 1]
+        return mux_hat, probs
+
+    @staticmethod
+    def compute_hats_nn(x_fit, y_fit, w_fit, x_pred):
+        # to tensor
+        x_fit = tf.convert_to_tensor(x_fit)
+        y_fit = tf.convert_to_tensor(y_fit)
+        w_fit = tf.convert_to_tensor(w_fit)
+        x_pred = tf.convert_to_tensor(x_pred)
+        # set models
+        temp_mux = clone_nn_regression(NN_SEQUENTIAL)
+        temp_ex = clone_nn_classification(NN_SEQUENTIAL)
+        # fit
+        temp_mux.fit(x_fit, y_fit,
+                     batch_size=BATCH_SIZE,
+                     epochs=N_EPOCHS,
+                     callbacks=CALLBACK,
+                     validation_split=VALIDATION_SPLIT,
+                     verbose=0)
+        temp_ex.fit(x_fit, w_fit,
+                    batch_size=BATCH_SIZE,
+                    epochs=N_EPOCHS,
+                    callbacks=CALLBACK,
+                    validation_split=VALIDATION_SPLIT,
+                    verbose=0)
+        # hats
+        mux_hat = tf.squeeze(temp_mux(x_pred))
+        probs = tf.squeeze(keras.activations.sigmoid(temp_ex(x_pred)))
+        return mux_hat, probs
+
     def fit(self, x, y, w):
 
         if self.method == 'rf':
             # 1: fit mu_x
-            self.mux_model.fit(x, y)
-            # 2: fit ex
-            self.ex_model.fit(x, w)
-            # 3: calculate pseudo_outcomes & weights
-            probs = self.ex_model.predict_proba(x)[:, 1]
-            pseudo_outcomes = (y - self.mux_model.predict(x)) / (w - probs + EPSILON)
+            mux_hat, probs = self.compute_hats_rf(x, y, w, x)
+            # pseudo-outcomes
+            pseudo_outcomes = (y - mux_hat) / (w - probs + EPSILON)
             weights = (w - probs) ** 2
             # 4: fit tau
             self.tau_model.fit(x, pseudo_outcomes, sample_weight=weights)
 
         elif self.method == 'lasso':
-            x_poly_train = self.poly.fit_transform(x)
+            # make polynomial
+            poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
+            x_poly_train = poly.fit_transform(x)
             # 1: fit mu_x
-            self.mux_model.fit(x_poly_train, y)
-            # 2: fit ex
-            self.ex_model.fit(x_poly_train, w)
-            # 3: calculate pseudo_outcomes & weights
-            probs = self.ex_model.predict_proba(x_poly_train)[:, 1]
-            pseudo_outcomes = (y - self.mux_model.predict(x_poly_train)) / (w - probs + EPSILON)
+            mux_hat, probs = self.compute_hats_lasso(x, y, w, x)
+            # pseudo-outcomes
+            pseudo_outcomes = (y - mux_hat) / (w - probs + EPSILON)
             weights = (w - probs) ** 2
             # 4: fit tau
             self.tau_model.fit(x_poly_train, pseudo_outcomes, sample_weight=weights)
 
         elif self.method == 'nn':
             # to tensor
-            x = tf.convert_to_tensor(x)
-            y = tf.convert_to_tensor(y)
-            w = tf.convert_to_tensor(w)
-            # 1: fit mu_x
-            self.mux_model.fit(x, y,
-                               batch_size=100,
-                               epochs=N_EPOCHS,
-                               callbacks=CALLBACK,
-                               validation_split=0.3,
-                               verbose=0
-                               )
-            # 2: fit ex
-            self.ex_model.fit(x, w,
-                              batch_size=100,
-                              epochs=N_EPOCHS,
-                              callbacks=CALLBACK,
-                              validation_split=0.3,
-                              verbose=0
-                              )
+            mux_hat, probs = self.compute_hats_nn(x, y, w, x)
             # 3: calculate pseudo_outcomes & weights
-            probs = tf.squeeze(keras.activations.sigmoid(self.ex_model(x)))
-            pseudo_outcomes = (y - tf.squeeze(self.mux_model(x))) / (w - probs + EPSILON)
+            # pseudo-outcomes
+            pseudo_outcomes = (y - mux_hat) / (w - probs + EPSILON)
             weights = (w - probs) ** 2
             # 4: fit tau
             self.tau_model.fit(x, pseudo_outcomes,
@@ -457,7 +516,8 @@ class RLearner:
             predictions = self.tau_model.predict(x)
 
         elif self.method == 'lasso':
-            x_poly_test = self.poly.fit_transform(x)
+            poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
+            x_poly_test = poly.fit_transform(x)
             predictions = self.tau_model.predict(x_poly_test)
 
         elif self.method == 'nn':

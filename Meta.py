@@ -1109,24 +1109,14 @@ class ULearner:
         self.name = f"ULearner, {self.method}"
 
         if self.method == 'rf':
-            self.mux_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
-                                                   random_state=RANDOM)
-            self.ex_model = RandomForestClassifier(n_estimators=N_TREES, max_depth=MAX_DEPTH,
-                                                   random_state=RANDOM)
             self.tau_model = RandomForestRegressor(n_estimators=N_TREES, max_depth=MAX_DEPTH,
                                                    random_state=RANDOM)
 
         elif self.method == 'lasso':
-            self.mux_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
-            self.ex_model = LogisticRegressionCV(cv=KFold(K_FOLDS), penalty='l1', solver='saga', tol=TOLERANCE,
-                                                 random_state=RANDOM,
-                                                 max_iter=MAX_ITER)
             self.tau_model = LassoCV(cv=K_FOLDS, tol=TOLERANCE, random_state=RANDOM, max_iter=MAX_ITER)
             self.poly = PolynomialFeatures(degree=DEGREE_POLYNOMIALS, interaction_only=False, include_bias=False)
 
         elif self.method == 'nn':
-            self.mux_model = clone_nn_regression(NN_SEQUENTIAL)
-            self.ex_model = clone_nn_classification(NN_SEQUENTIAL)
             self.tau_model = clone_nn_regression(NN_SEQUENTIAL)
 
         else:
