@@ -28,7 +28,7 @@ def clone_nn_regression(model):
     # compile model
     cloned_model.compile(
         # optimizer
-        optimizer=keras.optimizers.legacy.Adam(learning_rate=LEARNING_RATE),  # TODO: change to decay
+        optimizer=keras.optimizers.Adam(learning_rate=LEARNING_RATE, weight_decay=WEIGHT_DECAY),  # TODO: change to decay
         # loss function
         loss=keras.losses.MeanSquaredError(),
         # list of metrics to monitor
@@ -46,7 +46,7 @@ def clone_nn_classification(model):
     # compile model
     cloned_model.compile(
         # optimizer
-        optimizer=keras.optimizers.legacy.Adam(learning_rate=LEARNING_RATE),
+        optimizer=keras.optimizers.Adam(learning_rate=LEARNING_RATE, weight_decay=WEIGHT_DECAY),
         # loss function
         loss=keras.losses.BinaryCrossentropy(from_logits=True, label_smoothing=LABEL_SMOOTHING),
         # list of metrics to monitor
