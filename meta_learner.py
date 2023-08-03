@@ -457,7 +457,7 @@ class RLearner:
             # hats
             mux_hat, probs = self.compute_hats_rf(x, y, w, x)
             # pseudo-outcomes
-            pseudo_outcomes = (y - mux_hat) / (w - probs + EPSILON)
+            pseudo_outcomes = (y - mux_hat) / (w - probs)
             weights = (w - probs) ** 2
             # 3: fit tau
             self.tau_model.fit(x, pseudo_outcomes, sample_weight=weights)
@@ -466,7 +466,7 @@ class RLearner:
             # hats
             mux_hat, probs = self.compute_hats_lasso(x, y, w, x)
             # pseudo-outcomes
-            pseudo_outcomes = (y - mux_hat) / (w - probs + EPSILON)
+            pseudo_outcomes = (y - mux_hat) / (w - probs)
             weights = (w - probs) ** 2
             # to poly
             x_poly = self.poly.fit_transform(x)
@@ -477,7 +477,7 @@ class RLearner:
             # hats
             mux_hat, probs = self.compute_hats_nn(x, y, w, x)
             # pseudo-outcomes
-            pseudo_outcomes = (y - mux_hat) / (w - probs + EPSILON)
+            pseudo_outcomes = (y - mux_hat) / (w - probs)
             weights = (w - probs) ** 2
             # 3: fit tau
             self.tau_model.fit(x, pseudo_outcomes,
@@ -616,7 +616,7 @@ class DRLearner:
             mu0_hat, mu1_hat, probs = self.compute_hats_rf(x, y, w, x)
             # pseudo-outcomes
             mu_w = w * mu1_hat + (1 - w) * mu0_hat
-            pseudo_outcomes = (w - probs) / (probs * (1 - probs) + EPSILON) * (y - mu_w) + mu1_hat - mu0_hat
+            pseudo_outcomes = (w - probs) / (probs * (1 - probs)) * (y - mu_w) + mu1_hat - mu0_hat
             # 3: fit tau
             self.tau_model.fit(x, pseudo_outcomes)
 
@@ -625,7 +625,7 @@ class DRLearner:
             mu0_hat, mu1_hat, probs = self.compute_hats_lasso(x, y, w, x)
             # pseudo-outcomes
             mu_w = w * mu1_hat + (1 - w) * mu0_hat
-            pseudo_outcomes = (w - probs) / (probs * (1 - probs) + EPSILON) * (y - mu_w) + mu1_hat - mu0_hat
+            pseudo_outcomes = (w - probs) / (probs * (1 - probs)) * (y - mu_w) + mu1_hat - mu0_hat
             # to poly
             x_poly = self.poly.fit_transform(x)
             # 3: fit tau
@@ -636,7 +636,7 @@ class DRLearner:
             mu0_hat, mu1_hat, probs = self.compute_hats_nn(x, y, w, x)
             # pseudo-outcomes
             mu_w = w * mu1_hat + (1 - w) * mu0_hat
-            pseudo_outcomes = (w - probs) / (probs * (1 - probs) + EPSILON) * (y - mu_w) + mu1_hat - mu0_hat
+            pseudo_outcomes = (w - probs) / (probs * (1 - probs)) * (y - mu_w) + mu1_hat - mu0_hat
             # 3: fit tau
             self.tau_model.fit(x, pseudo_outcomes,
                                batch_size=BATCH_SIZE,
@@ -871,7 +871,7 @@ class PWLearner:
             # hats
             probs = self.compute_hats_rf(x, w, x)
             # pseudo-outcomes
-            pseudo_outcomes = (w / (probs + EPSILON) - (1 - w) / (1 - probs + EPSILON)) * y
+            pseudo_outcomes = (w / probs - (1 - w) / (1 - probs)) * y
             # 3: fit tau
             self.tau_model.fit(x, pseudo_outcomes)
 
@@ -879,7 +879,7 @@ class PWLearner:
             # hats
             probs = self.compute_hats_lasso(x, w, x)
             # pseudo-outcomes
-            pseudo_outcomes = tf.squeeze((w / (probs + EPSILON) - (1 - w) / (1 - probs + EPSILON)) * y)
+            pseudo_outcomes = tf.squeeze((w / probs - (1 - w) / (1 - probs)) * y)
             # to poly
             x_poly = self.poly.fit_transform(x)
             # 3: fit tau
@@ -889,7 +889,7 @@ class PWLearner:
             # hats
             probs = self.compute_hats_nn(x, w, x)
             # pseudo-outcomes
-            pseudo_outcomes = (w / (probs + EPSILON) - (1 - w) / (1 - probs + EPSILON)) * y
+            pseudo_outcomes = (w / probs - (1 - w) / (1 - probs)) * y
             # 3: fit tau
             self.tau_model.fit(x, pseudo_outcomes,
                                batch_size=BATCH_SIZE,
@@ -1010,7 +1010,7 @@ class ULearner:
             # hats
             mux_hat, probs = self.compute_hats_rf(x, y, w, x)
             # pseudo-outcomes
-            pseudo_outcomes = (y - mux_hat) / (w - probs + EPSILON)
+            pseudo_outcomes = (y - mux_hat) / (w - probs)
             # 3: fit tau
             self.tau_model.fit(x, pseudo_outcomes)
 
@@ -1018,7 +1018,7 @@ class ULearner:
             # hats
             mux_hat, probs = self.compute_hats_lasso(x, y, w, x)
             # pseudo-outcomes
-            pseudo_outcomes = (y - mux_hat) / (w - probs + EPSILON)
+            pseudo_outcomes = (y - mux_hat) / (w - probs)
             # to poly
             x_poly = self.poly.fit_transform(x)
             # 3: fit tau
@@ -1028,7 +1028,7 @@ class ULearner:
             # hats
             mux_hat, probs = self.compute_hats_nn(x, y, w, x)
             # pseudo-outcomes
-            pseudo_outcomes = (y - mux_hat) / (w - probs + EPSILON)
+            pseudo_outcomes = (y - mux_hat) / (w - probs)
             # 3: fit tau
             self.tau_model.fit(x, pseudo_outcomes,
                                batch_size=BATCH_SIZE,
