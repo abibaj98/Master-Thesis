@@ -6,4 +6,5 @@ jsonpickle==3.0.1
 ConfigArgParse==1.7
 rpy2==3.5.12
 scipy==1.10.1
+seaborn==0.12.2
 
