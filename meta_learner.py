@@ -36,7 +36,7 @@ class TLearner:  # TODO: comment what is what.
             self.mu1_model = clone_nn_regression(NN_SEQUENTIAL)
 
         else:
-            raise NotImplementedError('Base learner method not or not correctly specified')
+            raise ValueError('Base learner method not (or not correctly) specified. Can be "rf", "lasso" or "nn".')
 
     def fit(self,
             x, y, w):
@@ -103,7 +103,7 @@ class TLearner:  # TODO: comment what is what.
             predictions = np.array(mu1_hats - mu0_hats).squeeze()
 
         else:
-            raise NotImplementedError
+            raise ValueError('Base learner method not (or not correctly) specified. Can be "rf", "lasso" or "nn".')
 
         return predictions
 
@@ -125,7 +125,7 @@ class SLearner:
             self.mux_model = clone_nn_regression(NN_SEQUENTIAL)
 
         else:
-            raise NotImplementedError('Base learner method not or not correctly specified')
+            raise ValueError('Base learner method not (or not correctly) specified. Can be "rf", "lasso" or "nn".')
 
     def fit(self,
             x, y, w):
@@ -188,7 +188,7 @@ class SLearner:
             predictions = np.array(mu1_hats - mu0_hats).squeeze()
 
         else:
-            raise NotImplementedError
+            raise ValueError('Base learner method not (or not correctly) specified. Can be "rf", "lasso" or "nn".')
 
         return predictions
 
@@ -217,7 +217,7 @@ class XLearner:  # TODO: comment what is what.
             self.tau1_model = clone_nn_regression(NN_SEQUENTIAL)
 
         else:
-            raise NotImplementedError('Base learner method not or not correctly specified')
+            raise ValueError('Base learner method not (or not correctly) specified. Can be "rf", "lasso" or "nn".')
 
     @staticmethod
     def compute_hats_rf(x_fit, y_fit, w_fit, x_pred):
@@ -361,7 +361,7 @@ class XLearner:  # TODO: comment what is what.
             probs = np.array(keras.activations.sigmoid(logit)).squeeze()
 
         else:
-            raise NotImplementedError
+            raise ValueError('Base learner method not (or not correctly) specified. Can be "rf", "lasso" or "nn".')
 
         # 3: final predictions
         predictions = probs * tau_0_hats + (1 - probs) * tau_1_hats
@@ -385,7 +385,7 @@ class RLearner:
             self.tau_model = clone_nn_regression(NN_SEQUENTIAL)
 
         else:
-            raise NotImplementedError('Base learner method not or not correctly specified')
+            raise ValueError('Base learner method not (or not correctly) specified. Can be "rf", "lasso" or "nn".')
 
     @staticmethod
     def compute_hats_rf(x_fit, y_fit, w_fit, x_pred):
@@ -505,7 +505,7 @@ class RLearner:
             predictions = np.array(self.tau_model(x)).squeeze()
 
         else:
-            raise NotImplementedError
+            raise ValueError('Base learner method not (or not correctly) specified. Can be "rf", "lasso" or "nn".')
 
         return predictions
 
@@ -529,7 +529,7 @@ class DRLearner:
             self.tau_model = clone_nn_regression(NN_SEQUENTIAL)
 
         else:
-            raise NotImplementedError('Base learner method not or not correctly specified')
+            raise ValueError('Base learner method not (or not correctly) specified. Can be "rf", "lasso" or "nn".')
 
     @staticmethod
     def compute_hats_rf(x_fit, y_fit, w_fit, x_pred):
@@ -662,7 +662,7 @@ class DRLearner:
             predictions = np.array(self.tau_model(x)).squeeze()
 
         else:
-            raise NotImplementedError
+            raise ValueError('Base learner method not (or not correctly) specified. Can be "rf", "lasso" or "nn".')
 
         return predictions
 
@@ -684,7 +684,7 @@ class RALearner:
             self.tau_model = clone_nn_regression(NN_SEQUENTIAL)
 
         else:
-            raise NotImplementedError('Base learner method not or not correctly specified')
+            raise ValueError('Base learner method not (or not correctly) specified. Can be "rf", "lasso" or "nn".')
 
     @staticmethod
     def compute_hats_rf(x_fit, y_fit, w_fit, x_pred):
@@ -792,7 +792,7 @@ class RALearner:
             predictions = np.array(self.tau_model(x)).squeeze()
 
         else:
-            raise NotImplementedError
+            raise ValueError('Base learner method not (or not correctly) specified. Can be "rf", "lasso" or "nn".')
 
         return predictions
 
@@ -814,7 +814,7 @@ class PWLearner:
             self.tau_model = clone_nn_regression(NN_SEQUENTIAL)
 
         else:
-            raise NotImplementedError('Base learner method not or not correctly specified')
+            raise ValueError('Base learner method not (or not correctly) specified. Can be "rf", "lasso" or "nn".')
 
     @staticmethod
     def compute_hats_rf(x_fit, w_fit, x_pred):
@@ -915,7 +915,7 @@ class PWLearner:
             predictions = np.array(self.tau_model(x)).squeeze()
 
         else:
-            raise NotImplementedError
+            raise ValueError('Base learner method not (or not correctly) specified. Can be "rf", "lasso" or "nn".')
 
         return predictions
 
@@ -937,7 +937,7 @@ class ULearner:
             self.tau_model = clone_nn_regression(NN_SEQUENTIAL)
 
         else:
-            raise NotImplementedError('Base learner method not or not correctly specified')
+            raise ValueError('Base learner method not (or not correctly) specified. Can be "rf", "lasso" or "nn".')
 
     @staticmethod
     def compute_hats_rf(x_fit, y_fit, w_fit, x_pred):
@@ -1053,6 +1053,6 @@ class ULearner:
             predictions = np.array(self.tau_model(x)).squeeze()
 
         else:
-            raise NotImplementedError
+            raise ValueError('Base learner method not (or not correctly) specified. Can be "rf", "lasso" or "nn".')
 
         return predictions
