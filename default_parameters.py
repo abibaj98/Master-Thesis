@@ -34,7 +34,7 @@ BATCH_SIZE: int = 100
 WEIGHT_DECAY: float = 1e-3
 N_EPOCHS: int = 500
 LEARNING_RATE: float = 1e-4
-LABEL_SMOOTHING: float = 0.1
+LABEL_SMOOTHING: float = 0.1  # for classification only
 
 ''''''' RANDOM FORESTS '''''''
 N_TREES: int = 1000
