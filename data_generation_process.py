@@ -12,18 +12,21 @@ rpackages.importr("mpower")
 mpower = robjects.packages.importr("mpower")
 
 #############################
-# List of all settings 1-18 #
+# List of all settings 1-24 #
 #############################
 
 # all settings of e_x (propensity)
 exs = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5,  # for settings 1-6 (constant ex = 0.5)
        0.1, 0.1, 0.1, 0.1, 0.1, 0.1,  # for settings 7-12 (constant ex = 0.1)
        'beta_confounded', 'beta_confounded', 'beta_confounded', 'beta_confounded', 'beta_confounded',
-       'beta_confounded']  # for settings 13-18 (beta confounded)
+       'beta_confounded',  # for settings 13-18 (beta confounded, balanced)
+       'step_confounded', 'step_confounded', 'step_confounded', 'step_confounded', 'step_confounded',
+       'step_confounded'  # for settings 19-24 (step func confounded, unbalanced)
+       ]
 
 # all settings for the cate tau (each setting three times in combination with the propensity settings)
 cates = ['linear_response', 'non_linear_response', 'indicator_cate', 'linear_cate', 'complex_linear_cate',
-         'complex_non_linear_cate'] * 3
+         'complex_non_linear_cate'] * 4
 
 
 ###############################################
@@ -96,7 +99,7 @@ def complex_non_linear_cate(x):
     return mu_0, mu_1, tau
 
 
-# Beta confounded propensity
+# Beta confounded propensity (balanced)
 def beta_confounded(x):
     beta_dist = stats.beta(a=2, b=4)  # set beta distribution
 
@@ -104,6 +107,14 @@ def beta_confounded(x):
     cdf_values = stats.norm.cdf(x[:, 0])
     beta_values = beta_dist.pdf(cdf_values)  # calculate pdf values for x1
     e_x = 1 / 4 * (1 + beta_values)
+
+    return e_x
+
+
+# Step function confounded propensity (unbalanced)
+def step_function_confounded(x):
+    x = x[:, 0]
+    e_x = np.where(x <= 1, 0.01, 0.6)
 
     return e_x
 
@@ -154,6 +165,9 @@ def generate_data(mean, cov, ex, cate, sample_size, betas, betas_0, betas_1):
 
     elif ex == 'beta_confounded':
         e_x = beta_confounded(x)
+
+    elif ex == 'step_confounded':
+        e_x = step_function_confounded(x)
 
     else:
         raise NotImplementedError('Propensity method not or incorrectly specified.')
