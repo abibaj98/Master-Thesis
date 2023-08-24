@@ -363,6 +363,8 @@ class XLearner:  # TODO: comment what is what.
         else:
             raise ValueError('Base learner method not (or not correctly) specified. Can be "rf", "lasso" or "nn".')
 
+        # clip propensity estimates (only for fair comparison, otherwise not needed)
+        np.clip(probs, MIN_CLIP, MAX_CLIP, out=probs)
         # 3: final predictions
         predictions = probs * tau_0_hats + (1 - probs) * tau_1_hats
         return predictions

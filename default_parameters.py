@@ -9,15 +9,15 @@ NP_SEED: int = 2023  # numpy seed
 RANDOM: int = 2023  # random_state for random forest and linear models
 
 # Clip values for the predicted propensities
-MIN_CLIP = 0.05
-MAX_CLIP = 0.99
+MIN_CLIP: float = 0.01  # TODO: changed was 0.05
+MAX_CLIP: float = 0.99
 
 # data generation
 TEST_SIZE: int = 1000
-SAMPLE_SIZES = [500, 1000, 2000, 5000]
-N_RUNS = 10
+SAMPLE_SIZES: list = [500, 1000, 2000, 5000]
+N_RUNS: int = 10
 DIMENSION: int = 20  # Dimension of X
-N_SETUPS: int = 18  # the 18 different settings
+N_SETUPS: int = 24  # the 18 different settings, TODO:  NOT NEEDED!
 
 ''''''' NEURAL NETWORKS '''''''
 
@@ -25,16 +25,16 @@ N_SETUPS: int = 18  # the 18 different settings
 NON_LINEARITY: str = 'elu'
 
 # EARLY STOPPING
-PATIENCE: int = 5
-START_FROM: int = 50
+PATIENCE: int = 10  # TODO: changed was 5
+START_FROM: int = 200  # TODO: changed was 50
 VALIDATION_SPLIT: float = 0.3
 
 # OPTIMIZER
 BATCH_SIZE: int = 100
-WEIGHT_DECAY: float = 1e-3
+WEIGHT_DECAY: float = 1e-4  # TODO: changed, was 1e-3
 N_EPOCHS: int = 500
 LEARNING_RATE: float = 1e-4
-LABEL_SMOOTHING: float = 0.1  # for classification only
+LABEL_SMOOTHING: float = 0.0  # TODO: changed, was 0.1
 
 ''''''' RANDOM FORESTS '''''''
 N_TREES: int = 1000
@@ -46,5 +46,5 @@ MAX_FEATURES: float = 0.33
 ''''''' LASSO '''''''
 K_FOLDS: int = 10
 MAX_ITER: int = 1000000  # LOOK WHICH NUMBER
-TOLERANCE: float = 1
+TOLERANCE: float = 1.0
 DEGREE_POLYNOMIALS: int = 3

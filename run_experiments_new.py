@@ -54,17 +54,17 @@ def run_experiment(setting, runs, results):
     print("------------------------------------------")
     # array; all mses for the setup
     setup_mse = np.empty(shape=(0, 24))
-    # generated once!
+    # same all the time
     mean_x = np.zeros(d)
-    cov_x = np.array(mpower.cvine(d=d, alpha=0.5, beta=0.5))
-    betas_run = random.uniform(low=-1, high=1, size=d)
-    betas_0_run = random.uniform(low=-0.5, high=0.5, size=d)
-    betas_1_run = random.uniform(low=-0.5, high=0.5, size=d)
     for r in range(runs):
         print(f'Run: {r + 1}')
         # array; all mses for one specific run.
         run_mse = np.empty(shape=(0, 24))
-        # cov_x, betas, beta_0 and betas_1 generated once per run (THEY WERE HERE OLD!)
+        # cov_x, betas, beta_0 and betas_1 generated once per run
+        cov_x = np.array(mpower.cvine(d=d, alpha=0.5, beta=0.5))
+        betas_run = random.uniform(low=-1, high=1, size=d)
+        betas_0_run = random.uniform(low=-0.5, high=0.5, size=d)
+        betas_1_run = random.uniform(low=-0.5, high=0.5, size=d)
         for s, size in enumerate(sample_sizes):
             print(f'Sample Size #{s + 1}: {size}')
             # array; all mses for one specific run and sample size
