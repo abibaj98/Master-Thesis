@@ -6,7 +6,7 @@
 KERAS_SEED: int = 2023  # keras seed
 R_SEED: int = 2023  # r seed
 NP_SEED: int = 2023  # numpy seed
-RANDOM: None  # random_state for random forest and linear models # TODO: change?
+RANDOM = None  # random_state for random forest and linear models # TODO: change?
 
 # Clip values for the predicted propensities
 MIN_CLIP: float = 0.05
