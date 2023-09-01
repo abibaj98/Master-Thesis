@@ -7,12 +7,27 @@ from keras.callbacks import EarlyStopping
 from default_parameters import *
 
 # Sequential Model Architecture
+"""
 NN_SEQUENTIAL: Sequential = keras.Sequential([
     layers.Dense(units=200, activation=NON_LINEARITY, name="layer1"),
     layers.Dense(units=200, activation=NON_LINEARITY, name="layer2"),
     layers.Dense(units=200, activation=NON_LINEARITY, name="layer3"),
     layers.Dense(units=100, activation=NON_LINEARITY, name="layer4"),
     layers.Dense(units=100, activation=NON_LINEARITY, name="layer5"),
+    layers.Dense(units=1, activation="linear", name="layer6"),
+], name="NN_SEQUENTIAL") """
+
+NN_SEQUENTIAL: Sequential = keras.Sequential([
+    layers.Dense(units=200, activation=NON_LINEARITY, name="layer1"),
+    layers.Dropout(rate=DROP_OUT),
+    layers.Dense(units=200, activation=NON_LINEARITY, name="layer2"),
+    layers.Dropout(rate=DROP_OUT),
+    layers.Dense(units=200, activation=NON_LINEARITY, name="layer3"),
+    layers.Dropout(rate=DROP_OUT),
+    layers.Dense(units=100, activation=NON_LINEARITY, name="layer4"),
+    layers.Dropout(rate=DROP_OUT),
+    layers.Dense(units=100, activation=NON_LINEARITY, name="layer5"),
+    layers.Dropout(rate=DROP_OUT),
     layers.Dense(units=1, activation="linear", name="layer6"),
 ], name="NN_SEQUENTIAL")
 
@@ -28,7 +43,8 @@ def clone_nn_regression(model):
     # compile model
     cloned_model.compile(
         # optimizer
-        optimizer=keras.optimizers.Adam(learning_rate=LEARNING_RATE, weight_decay=WEIGHT_DECAY),  # TODO: change to decay
+        optimizer=keras.optimizers.Adam(learning_rate=LEARNING_RATE, weight_decay=WEIGHT_DECAY),
+        # TODO: change to decay
         # loss function
         loss=keras.losses.MeanSquaredError(),
         # list of metrics to monitor
