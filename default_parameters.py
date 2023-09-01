@@ -22,6 +22,7 @@ DIMENSION: int = 20  # Dimension of X
 
 # ARCHITECTURE
 NON_LINEARITY: str = 'elu'
+DROP_OUT: float = 0.3  # TODO: TRY this, its new!
 
 # EARLY STOPPING
 PATIENCE: int = 5  # changed was 10 when tried.
