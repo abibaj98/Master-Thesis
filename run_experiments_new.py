@@ -34,6 +34,7 @@ d = DIMENSION  # default dimension of X
 # All Metalearners # (In combination with each Baselearner (Random Forest, Linear Models, Neural Network))
 ####################
 
+
 learners = [TLearner('rf'), SLearner('rf'), XLearner('rf'), RLearner('rf'), DRLearner('rf'), RALearner('rf'),
             PWLearner('rf'), ULearner('rf'),
             TLearner('lasso'), SLearner('lasso'), XLearner('lasso'), RLearner('lasso'), DRLearner('lasso'),
@@ -45,7 +46,7 @@ learners = [TLearner('rf'), SLearner('rf'), XLearner('rf'), RLearner('rf'), DRLe
 ############################################################
 # Function which runs the experiment on the simulated data #
 ############################################################
-def run_experiment(setting, runs, results):
+def run_experiment(setting, runs, results, learners):
     print("------------------------------------------")
     print(f'Setting chosen: {setting + 1}')
     print(f'Number of Runs chosen: {runs}')
@@ -191,7 +192,7 @@ def main():
 
     if argument.data == "simulated":
         # run experiment for one setting
-        run_experiment(setting=argument.setting - 1, runs=argument.runs, results=results)
+        run_experiment(setting=argument.setting - 1, runs=argument.runs, results=results, learners=learners)
         # results json name
         results_file_name = f'results_simulated_setting{argument.setting}_{argument.runs}run(s).json'  # TODO: change!!!
 
