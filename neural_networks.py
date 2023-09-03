@@ -2,7 +2,7 @@
 import tensorflow as tf
 import keras
 from keras import layers, Sequential
-from keras.callbacks import EarlyStopping
+from keras.layers import Dense, Dropout
 # import from files
 from default_parameters import *
 
@@ -17,23 +17,26 @@ NN_SEQUENTIAL: Sequential = keras.Sequential([
     layers.Dense(units=1, activation="linear", name="layer6"),
 ], name="NN_SEQUENTIAL") """
 
-NN_SEQUENTIAL: Sequential = keras.Sequential([
-    layers.Dense(units=200, activation=NON_LINEARITY, name="layer1"),
-    layers.Dropout(rate=DROP_OUT),
-    layers.Dense(units=200, activation=NON_LINEARITY, name="layer2"),
-    layers.Dropout(rate=DROP_OUT),
-    layers.Dense(units=200, activation=NON_LINEARITY, name="layer3"),
-    layers.Dropout(rate=DROP_OUT),
-    layers.Dense(units=100, activation=NON_LINEARITY, name="layer4"),
-    layers.Dropout(rate=DROP_OUT),
-    layers.Dense(units=100, activation=NON_LINEARITY, name="layer5"),
-    layers.Dropout(rate=DROP_OUT),
-    layers.Dense(units=1, activation="linear", name="layer6"),
+NN_SEQUENTIAL: Sequential = Sequential([
+    Dense(units=200, activation=NON_LINEARITY, name="layer1"),
+    Dropout(rate=DROP_OUT),
+    Dense(units=200, activation=NON_LINEARITY, name="layer2"),
+    Dropout(rate=DROP_OUT),
+    Dense(units=200, activation=NON_LINEARITY, name="layer3"),
+    Dropout(rate=DROP_OUT),
+    Dense(units=100, activation=NON_LINEARITY, name="layer4"),
+    Dropout(rate=DROP_OUT),
+    Dense(units=100, activation=NON_LINEARITY, name="layer5"),
+    Dropout(rate=DROP_OUT),
+    Dense(units=1, activation="linear", name="layer6"),
 ], name="NN_SEQUENTIAL")
 
 # early stopping setting
+CALLBACK = None
+"""
 CALLBACK: EarlyStopping = keras.callbacks.EarlyStopping(monitor='val_loss', patience=PATIENCE,
                                                         start_from_epoch=START_FROM)
+                                                        """
 
 
 # function to compile neural network for a regression task
