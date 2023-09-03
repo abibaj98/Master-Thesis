@@ -203,7 +203,7 @@ def main():
         # run experiment
         run_ihdp(runs=argument.runs_ihdp, results=results)
         # results json name
-        results_file_name = f'results_ihdp_{argument.runs_ihdp}run(s).json'
+        results_file_name = f'results_ihdp_{argument.runs_ihdp}run(s)_3sept.json'
 
     else:
         raise NotImplementedError
