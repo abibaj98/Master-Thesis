@@ -22,18 +22,18 @@ DIMENSION: int = 20  # Dimension of X
 
 # ARCHITECTURE
 NON_LINEARITY: str = 'elu'
-DROP_OUT: float = 0.3  # TODO: TRY this, its new!
+DROP_OUT: float = 0.3  # TODO: TRY this, its new! was 0.3
 
 # EARLY STOPPING
 PATIENCE: int = 5  # changed was 10 when tried.
 START_FROM: int = 50
-VALIDATION_SPLIT: float = 0.1  # TODO: THIS!!!
+VALIDATION_SPLIT: float = 0.0  # TODO: THIS!!! was 0.1
 
 # OPTIMIZER
 BATCH_SIZE: int = 100
-WEIGHT_DECAY: float = 1e-3  # changed, was 1e-4, when tried
+WEIGHT_DECAY: float = 1e-4  # changed, was 1e-4, when tried
 N_EPOCHS: int = 100
-LEARNING_RATE: float = 1e-4
+LEARNING_RATE: float = 1e-3
 LABEL_SMOOTHING: float = 0.0  # 0 means no smoothing, changed, was 0.1
 
 ''''''' RANDOM FORESTS '''''''
