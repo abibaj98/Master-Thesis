@@ -35,13 +35,16 @@ d = DIMENSION  # default dimension of X
 ####################
 
 
+learners = [TLearner('nn'), SLearner('nn'), XLearner('nn'), RLearner('nn'), DRLearner('nn'), RALearner('nn')]
+
+"""
 learners = [TLearner('rf'), SLearner('rf'), XLearner('rf'), RLearner('rf'), DRLearner('rf'), RALearner('rf'),
             PWLearner('rf'), ULearner('rf'),
             TLearner('lasso'), SLearner('lasso'), XLearner('lasso'), RLearner('lasso'), DRLearner('lasso'),
             RALearner('lasso'), PWLearner('lasso'), ULearner('lasso'),
             TLearner('nn'), SLearner('nn'), XLearner('nn'), RLearner('nn'), DRLearner('nn'), RALearner('nn'),
             PWLearner('nn'), ULearner('nn')]
-
+"""
 
 ############################################################
 # Function which runs the experiment on the simulated data #
@@ -194,7 +197,7 @@ def main():
         # run experiment for one setting
         run_experiment(setting=argument.setting - 1, runs=argument.runs, results=results, learners=learners)
         # results json name
-        results_file_name = f'results_simulated_setting{argument.setting}_{argument.runs}run(s).json'  # TODO: change!!!
+        results_file_name = f'results_simulated_setting{argument.setting}_{argument.runs}run(s)_3sept.json'  # TODO: change!!!
 
     elif argument.data == "ihdp":
         # run experiment
