@@ -4,7 +4,7 @@ import keras
 from keras import Sequential
 from keras.layers import Dense, Dropout
 # import from files
-from default_parameters import *
+from default_values import *
 
 # Sequential Model Architecture
 NN_SEQUENTIAL: Sequential = Sequential([

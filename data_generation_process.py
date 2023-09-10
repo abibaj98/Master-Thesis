@@ -1,5 +1,5 @@
 # from files
-from default_parameters import *
+from default_values import *
 # import packages
 import numpy as np
 from numpy import random

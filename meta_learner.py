@@ -8,7 +8,7 @@ from sklearn.linear_model import LogisticRegressionCV
 from sklearn.model_selection import KFold
 from sklearn.preprocessing import PolynomialFeatures
 # import from files
-from default_parameters import *
+from default_values import *
 from neural_networks import clone_nn_regression, clone_nn_classification, NN_SEQUENTIAL, CALLBACK
 
 
