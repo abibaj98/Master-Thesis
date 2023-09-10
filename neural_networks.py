@@ -1,22 +1,12 @@
 # import packages
 import tensorflow as tf
 import keras
-from keras import layers, Sequential
+from keras import Sequential
 from keras.layers import Dense, Dropout
 # import from files
 from default_parameters import *
 
 # Sequential Model Architecture
-"""
-NN_SEQUENTIAL: Sequential = keras.Sequential([
-    layers.Dense(units=200, activation=NON_LINEARITY, name="layer1"),
-    layers.Dense(units=200, activation=NON_LINEARITY, name="layer2"),
-    layers.Dense(units=200, activation=NON_LINEARITY, name="layer3"),
-    layers.Dense(units=100, activation=NON_LINEARITY, name="layer4"),
-    layers.Dense(units=100, activation=NON_LINEARITY, name="layer5"),
-    layers.Dense(units=1, activation="linear", name="layer6"),
-], name="NN_SEQUENTIAL") """
-
 NN_SEQUENTIAL: Sequential = Sequential([
     Dense(units=200, activation=NON_LINEARITY, name="layer1"),
     Dropout(rate=DROP_OUT),
@@ -31,12 +21,8 @@ NN_SEQUENTIAL: Sequential = Sequential([
     Dense(units=1, activation="linear", name="layer6"),
 ], name="NN_SEQUENTIAL")
 
-# early stopping setting
+# early stopping setting, not used
 CALLBACK = None
-"""
-CALLBACK: EarlyStopping = keras.callbacks.EarlyStopping(monitor='val_loss', patience=PATIENCE,
-                                                        start_from_epoch=START_FROM)
-                                                        """
 
 
 # function to compile neural network for a regression task
@@ -47,7 +33,6 @@ def clone_nn_regression(model):
     cloned_model.compile(
         # optimizer
         optimizer=keras.optimizers.Adam(learning_rate=LEARNING_RATE, weight_decay=WEIGHT_DECAY),
-        # TODO: change to decay
         # loss function
         loss=keras.losses.MeanSquaredError(),
         # list of metrics to monitor
