@@ -20,7 +20,7 @@ np.random.seed(NP_SEED)  # numpy seed
 tf.keras.utils.set_random_seed(KERAS_SEED)  # keras seed
 
 # set dtype standard
-tf.keras.backend.set_floatx('float64')
+tf.keras.backend.set_floatx('float64')  # keras d.type default
 
 ##################
 # Default Values #
@@ -31,20 +31,16 @@ n_runs = N_RUNS  # default number of runs
 d = DIMENSION  # default dimension of X
 
 ####################
-# All Metalearners # (In combination with each Baselearner (Random Forest, Linear Models, Neural Network))
+# All Metalearners #
 ####################
-
-
-learners = [TLearner('nn'), SLearner('nn'), XLearner('nn'), RLearner('nn'), DRLearner('nn'), RALearner('nn')]
-
-"""
+# In combination with each Baselearner (Random Forest, Lasso-Based, Neural Network))
 learners = [TLearner('rf'), SLearner('rf'), XLearner('rf'), RLearner('rf'), DRLearner('rf'), RALearner('rf'),
             PWLearner('rf'), ULearner('rf'),
             TLearner('lasso'), SLearner('lasso'), XLearner('lasso'), RLearner('lasso'), DRLearner('lasso'),
             RALearner('lasso'), PWLearner('lasso'), ULearner('lasso'),
             TLearner('nn'), SLearner('nn'), XLearner('nn'), RLearner('nn'), DRLearner('nn'), RALearner('nn'),
             PWLearner('nn'), ULearner('nn')]
-"""
+
 
 ############################################################
 # Function which runs the experiment on the simulated data #
@@ -53,9 +49,9 @@ def run_experiment(setting, runs, results, learners):
     print("------------------------------------------")
     print(f'Setting chosen: {setting + 1}')
     print(f'Number of Runs chosen: {runs}')
-    print("------------------------------------------")
-    print("Running the Experiment on Simulated Data")
-    print("------------------------------------------")
+    print("-------------------------------------------")
+    print("Running the Experiment Fully-Synthetic Data")
+    print("-------------------------------------------")
     # array; all mses for the setup
     setup_mse = np.empty(shape=(0, 24))
     # same all the time
@@ -116,7 +112,6 @@ def run_experiment(setting, runs, results, learners):
 # Function which runs the experiment on the ihdp dataset #
 ##########################################################
 
-
 # one setup
 def run_ihdp(runs, results):
     train_ihdp = np.load('ihdp_train_processed.npy')
@@ -151,7 +146,7 @@ def run_ihdp(runs, results):
         print('-------------------------')
     # append to results
     results[0] = all_mse[:, 0:8]  # random forest
-    results[1] = all_mse[:, 8:16]  # lm
+    results[1] = all_mse[:, 8:16]  # lasso-based
     results[2] = all_mse[:, 16:24]  # neural network
     print("Done")
     print('-------------------------')
@@ -186,7 +181,6 @@ def parser_arguments():
 #######################################
 # main function: what is actually run #
 #######################################
-
 def main():
     # arguments from the ArgParser
     argument = parser_arguments()
@@ -197,13 +191,13 @@ def main():
         # run experiment for one setting
         run_experiment(setting=argument.setting - 1, runs=argument.runs, results=results, learners=learners)
         # results json name
-        results_file_name = f'results_simulated_setting{argument.setting}_{argument.runs}run(s)_3sept.json'  # TODO: change!!!
+        results_file_name = f'results_simulated_setting{argument.setting}_{argument.runs}run(s).json'
 
     elif argument.data == "ihdp":
         # run experiment
         run_ihdp(runs=argument.runs_ihdp, results=results)
         # results json name
-        results_file_name = f'results_ihdp_{argument.runs_ihdp}run(s)_3sept.json'
+        results_file_name = f'results_ihdp_{argument.runs_ihdp}run(s).json'
 
     else:
         raise NotImplementedError
