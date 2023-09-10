@@ -2,48 +2,45 @@
 
 ''''''' Generals  '''''''
 
-# seeds
+# Seeds
 KERAS_SEED: int = 2023  # keras seed
 R_SEED: int = 2023  # r seed
 NP_SEED: int = 2023  # numpy seed
-RANDOM = None  # random_state for random forest and linear models # TODO: change?
+RANDOM = None  # not needed (random_state for RandomForest and Lasso)
 
 # Clip values for the predicted propensities
 MIN_CLIP: float = 0.05
 MAX_CLIP: float = 0.95
 
-# data generation
+# Data generation
 TEST_SIZE: int = 1000
 SAMPLE_SIZES: list = [500, 1000, 2000, 5000]
 N_RUNS: int = 10
-DIMENSION: int = 20  # Dimension of X
+DIMENSION: int = 20  # dimension of X
 
 ''''''' NEURAL NETWORKS '''''''
 
-# ARCHITECTURE
+# Architecture
 NON_LINEARITY: str = 'elu'
-DROP_OUT: float = 0.3  # TODO: TRY this, its new! was 0.3
+DROP_OUT: float = 0.3  # dropout rate
 
-# EARLY STOPPING
-PATIENCE: int = 5  # changed was 10 when tried.
-START_FROM: int = 50
-VALIDATION_SPLIT: float = 0.0  # TODO: THIS!!! was 0.1
+# Early Stopping, not used since Callbacks = None (in neural_networks.py)
+VALIDATION_SPLIT: float = 0.0  # i.e., not used
 
-# OPTIMIZER
+# Optimizer
 BATCH_SIZE: int = 100
-WEIGHT_DECAY: float = 1e-4  # changed, was 1e-4, when tried
+WEIGHT_DECAY: float = 1e-4
 N_EPOCHS: int = 100
 LEARNING_RATE: float = 1e-3
-LABEL_SMOOTHING: float = 0.0  # 0 means no smoothing, changed, was 0.1
+LABEL_SMOOTHING: float = 0.0  # i.e., not used
 
 ''''''' RANDOM FORESTS '''''''
 N_TREES: int = 1000
 MAX_DEPTH: int = 7
 MAX_FEATURES: float = 0.33
 
-
-''''''' LASSO '''''''
+''''''' LASSO-BASED REGRESSION '''''''
 K_FOLDS: int = 10
-MAX_ITER: int = 1000000  # LOOK WHICH NUMBER
+MAX_ITER: int = 1000000
 TOLERANCE: float = 1.0
 DEGREE_POLYNOMIALS: int = 3
