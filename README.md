@@ -14,10 +14,10 @@ Base-Learners: random forests, lasso-based regression, neural networks.
 ### Description of the Files
 `run_experiments.py`: main file that runs the experiments and saves the results in json format. \
 `meta_learner.py`: contains the meta-learners classes. \
-`neural_networks`: neural network architecture and helper functions. \
+`neural_networks.py`: neural network architecture and helper functions. \
 `data_generation_process.py`: contains the functions needed for the DGP. \
 `default_values.py`: some default values, e.g., arguments for the base-learners. \
-`preprocess_ihdp.py`: helper function to pre-process the IHDP dataset. You don't need to run it. \
+`preprocess_ihdp.py`: helper function to pre-process the IHDP dataset. Already done.  \
 `requirements.txt`: required packages with the corresponding versions for reproduction of the results.
 `Plots.ipynb`: to plot the results in jupyter notebook.
 
