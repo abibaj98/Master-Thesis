@@ -68,7 +68,7 @@ def simple_indicator_cate(x, betas):
 def simple_linear_cate(x, betas):
     # train set
     mu_0 = np.matmul(x, betas) + 5 * x[:, 0]
-    mu_1 = mu_0 + 4 * x[:, 1] + 2  # TODO: what to change?
+    mu_1 = mu_0 + 4 * x[:, 1] + 2
     tau = mu_1 - mu_0
 
     return mu_0, mu_1, tau
@@ -87,7 +87,7 @@ def complex_linear_cate(x, betas_0, betas_1):
 # vi): complex non-linear cate
 # helper function varsigma
 def varsigma_function(x):
-    return 2 / (1 + np.exp(-12 * x))  # TODO: before, it was (x - 0,5).
+    return 2 / (1 + np.exp(-12 * x))
 
 
 def complex_non_linear_cate(x):

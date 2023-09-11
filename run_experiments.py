@@ -96,11 +96,6 @@ def run_experiment(setting, runs, results, learners):
         setup_mse = np.append(setup_mse, run_mse, axis=0)
         print("-----------------------")
     # append to results
-    """
-    results[0] = setup_mse[:, 0:8]  # random forest
-    results[1] = setup_mse[:, 8:16]  # lasso
-    results[2] = setup_mse[:, 16:24]  # neural network
-    """
     results[0] = np.concatenate((setup_mse[:, 0:8], np.tile(sample_sizes, reps=runs)[:, np.newaxis]), axis=1)
     results[1] = np.concatenate((setup_mse[:, 8:16], np.tile(sample_sizes, reps=runs)[:, np.newaxis]), axis=1)
     results[2] = np.concatenate((setup_mse[:, 16:24], np.tile(sample_sizes, reps=runs)[:, np.newaxis]), axis=1)
@@ -191,13 +186,14 @@ def main():
         # run experiment for one setting
         run_experiment(setting=argument.setting - 1, runs=argument.runs, results=results, learners=learners)
         # results json name
-        results_file_name = f'results_simulated_setting{argument.setting}_{argument.runs}run(s).json'
+        results_file_name = f'final_results_final/results_simulated_setting{argument.setting}_{argument.runs}run(' \
+                            f's)_final.json'
 
     elif argument.data == "ihdp":
         # run experiment
         run_ihdp(runs=argument.runs_ihdp, results=results)
         # results json name
-        results_file_name = f'results_ihdp_{argument.runs_ihdp}run(s).json'
+        results_file_name = f'final_results_final/results_ihdp_{argument.runs_ihdp}run(s)_final.json'
 
     else:
         raise NotImplementedError

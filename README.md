@@ -1,8 +1,7 @@
 # Conditional Average Treatment Effect Estimation via Meta-Learners
 ###### Master Thesis by Arberim Bibaj (August 2023, ETHZ, MSc Statistisc)
-In the following you a description of the files and instructions to reproduce the results of the thesis. 
-see how to reproduce the results.
-Additionally, there is a short description of the project and some important papers regarding meta-learners.
+In the following you can see a description of the files and instructions to reproduce the results of the thesis.
+Additionally, there is a short description of the project.
 
 ### Short Description of the Project
 The goal was to compare the performances of the most essential meta-learners for
@@ -12,15 +11,19 @@ Meta-Learners: T-, S-, X-, R-, DR-, RA-, PW-, and U-learner.
 
 Base-Learners: random forests, lasso-based regression, neural networks.
 
-### Description of the files
+### Description of the Files
 `run_experiments.py`: main file that runs the experiments and saves the results in json format. \
 `meta_learner.py`: contains the meta-learners classes. \
 `neural_networks`: neural network architecture and helper functions. \
 `data_generation_process.py`: contains the functions needed for the DGP. \
 `default_values.py`: some default values, e.g., arguments for the base-learners. \
-`example.py`: helper function to pre-process the IHDP dataset. \
+`preprocess_ihdp.py`: helper function to pre-process the IHDP dataset. You don't need to run it. \
 `requirements.txt`: required packages with the corresponding versions for reproduction of the results.
 `Plots.ipynb`: to plot the results in jupyter notebook.
+
+All results are already in the folder `final_results_final`. If you simply want to plot the results please directly use
+`Plots.ipynb`.
+
 
 ## Reproduction of the Results
 First, please make sure to install the required packages on Python (3.11.2) with the corresponding versions:

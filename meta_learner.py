@@ -12,7 +12,7 @@ from default_values import *
 from neural_networks import clone_nn_regression, clone_nn_classification, NN_SEQUENTIAL, CALLBACK
 
 
-class TLearner:  # TODO: comment what is what.
+class TLearner:
     def __init__(self, method):
         self.method = method
         self.name = f"TLearner, {self.method}"
@@ -193,7 +193,7 @@ class SLearner:
         return predictions
 
 
-class XLearner:  # TODO: comment what is what.
+class XLearner:
     def __init__(self, method):
         self.method = method
         self.name = f"XLearner, {self.method}"
