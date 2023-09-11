@@ -58,5 +58,4 @@ To execute five runs of the semi-synthetic experiment:
 ````
 python run_experiments.py --data=ihdp --runs_ihdp=5
 ````
-### Relevant Literature
 
