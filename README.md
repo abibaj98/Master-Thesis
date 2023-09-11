@@ -1,11 +1,13 @@
 # Conditional Average Treatment Effect Estimation via Meta-Learners
-###### Master Thesis by Arberim Bibaj (August 2023, ETHZ, MSc Statistisc)
-In the following you can see a description of the files and instructions to reproduce the results of the thesis.
-Additionally, there is a short description of the project.
+###### Master Thesis by Arberim Bibaj (August 2023, ETH Zurich, MSc Statistics)
+In the following, you can see a description of the files and instructions to reproduce the results of the thesis.
+Additionally, there is a brief description of the project.
 
 ### Short Description of the Project
 The goal was to compare the performances of the most essential meta-learners for
-conditional average treatment effect (CATE) estimation.
+conditional average treatment effect (CATE) estimation. The meta-learners are tested on fully-synthetic data,
+which include 24 settings. Additionally, the meta-learners are tested on semi-synthetic data, consisting of real
+features from the Infant Health and Development Program (IHDP) dataset and simulated potential outcomes.
 
 Meta-Learners: T-, S-, X-, R-, DR-, RA-, PW-, and U-learner.
 
@@ -17,7 +19,7 @@ Base-Learners: random forests, lasso-based regression, neural networks.
 `neural_networks.py`: neural network architecture and helper functions. \
 `data_generation_process.py`: contains the functions needed for the DGP. \
 `default_values.py`: some default values, e.g., arguments for the base-learners. \
-`preprocess_ihdp.py`: helper function to pre-process the IHDP dataset. Already done.  \
+`preprocess_ihdp.py`: helper function to pre-process the IHDP dataset.  \
 `requirements.txt`: required packages with the corresponding versions for reproduction of the results. \
 `plot_helper.py`: helper function for the plots. \
 `Plots.ipynb`: to plot the results in jupyter notebook. (GitHub Warning: Unable to render code block)
@@ -35,7 +37,7 @@ pip install -r requirements.txt
 Additionally, you need to install R (4.2.2) and the package mpower (0.1.0) as it is used for the Data Generating Process
 within Python.
 
-Next, to reproduce the results on the semi-synthetic data (IHDP), go to the directory and run the following command:
+Next, to reproduce the results on the semi-synthetic data (IHDP), run the following command:
 ````
 python run_experiments.py --data=ihdp
 ````
@@ -56,3 +58,5 @@ To execute five runs of the semi-synthetic experiment:
 ````
 python run_experiments.py --data=ihdp --runs_ihdp=5
 ````
+### Relevant Literature
+
