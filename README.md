@@ -22,7 +22,7 @@ Base-Learners: random forests, lasso-based regression, neural networks.
 `Plots.ipynb`: to plot the results in jupyter notebook.
 
 All results are already in the folder `final_results_final`. If you simply want to plot the results please directly use
-`Plots.ipynb`.
+`Plots.ipynb` or find the finished plots in the folder `plots_final`.
 
 
 ## Reproduction of the Results
