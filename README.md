@@ -21,9 +21,10 @@ Base-Learners: random forests, lasso-based regression, neural networks.
 `requirements.txt`: required packages with the corresponding versions for reproduction of the results.
 `Plots.ipynb`: to plot the results in jupyter notebook.
 
-All results are already in the folder `final_results_final`. If you simply want to plot the results please directly use
-`Plots.ipynb` or find the finished plots in the folder `plots_final`.
-
+### Folders
+`final_results_final`: contains the results as json files. \
+`ihdp`: contains the raw and processed ihdp data. \
+`plots_final`: contains the finished plots in 'eps' format.
 
 ## Reproduction of the Results
 First, please make sure to install the required packages on Python (3.11.2) with the corresponding versions:

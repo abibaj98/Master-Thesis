@@ -109,8 +109,8 @@ def run_experiment(setting, runs, results, learners):
 
 # one setup
 def run_ihdp(runs, results):
-    train_ihdp = np.load('ihdp_train_processed.npy')
-    test_ihdp = np.load('ihdp_test_processed.npy')
+    train_ihdp = np.load('ihdp/ihdp_train_processed.npy')
+    test_ihdp = np.load('ihdp/ihdp_test_processed.npy')
     print("------------------------------------------")
     print(f'Number of Runs chosen: {runs}')
     print("------------------------------------------")
