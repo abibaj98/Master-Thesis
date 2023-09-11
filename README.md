@@ -20,7 +20,7 @@ Base-Learners: random forests, lasso-based regression, neural networks.
 `preprocess_ihdp.py`: helper function to pre-process the IHDP dataset. Already done.  \
 `requirements.txt`: required packages with the corresponding versions for reproduction of the results. \
 `plot_helper.py`: helper function for the plots. \
-`Plots.ipynb`: to plot the results in jupyter notebook.
+`Plots.ipynb`: to plot the results in jupyter notebook. (GitHub Warning: Unable to render code block)
 
 ### Folders
 `final_results_final`: contains the results as json files. \
