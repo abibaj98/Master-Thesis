@@ -18,7 +18,8 @@ Base-Learners: random forests, lasso-based regression, neural networks.
 `data_generation_process.py`: contains the functions needed for the DGP. \
 `default_values.py`: some default values, e.g., arguments for the base-learners. \
 `preprocess_ihdp.py`: helper function to pre-process the IHDP dataset. Already done.  \
-`requirements.txt`: required packages with the corresponding versions for reproduction of the results.
+`requirements.txt`: required packages with the corresponding versions for reproduction of the results. \
+`plot_helper.py`: helper function for the plots. \
 `Plots.ipynb`: to plot the results in jupyter notebook.
 
 ### Folders
